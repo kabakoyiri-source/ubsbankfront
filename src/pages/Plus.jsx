@@ -95,13 +95,14 @@ function Plus() {
                   key={index}
                   className="menu-item"
                   onClick={item.action}
+                  disabled={!item.action}
                 >
                   <div className="menu-item-icon">
                     <Icon size={24} />
                   </div>
                   <div className="menu-item-content">
                     <span className="menu-item-label">{item.label}</span>
-                    <span className="menu-item-description">{item.description}</span>
+                    <span className="menu-item-description">{item.action ? item.description : 'Bientôt disponible'}</span>
                   </div>
                   <div className="menu-item-arrow">
                     <FiChevronRight size={20} />

@@ -20,7 +20,7 @@ function About() {
 
       <div className="about-content">
         <div className="app-branding">
-          <img src="/images/ubs.png" alt="Logo" className="about-logo" />
+          <img src="/images/logo-wordmark.png" alt="Logo" className="about-logo" />
           <h2>UBS Mobile Banking</h2>
           <p className="version">Version 2.4.0 (Build 20250126)</p>
         </div>

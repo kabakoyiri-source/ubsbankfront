@@ -18,6 +18,7 @@ function Accounts() {
   const { user } = useAuth()
   const [adminBalance, setAdminBalance] = useState({ chf: 0, eur: 0, usd: 0 })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [showBalances, setShowBalances] = useState({
     chf: false,
     eur: false,
@@ -60,6 +61,8 @@ function Accounts() {
   }, [])
 
   const loadBalance = async () => {
+    setLoading(true)
+    setError('')
     try {
       const response = await api.get('/operations?admin=true')
       if (response.data.success) {
@@ -77,6 +80,7 @@ function Accounts() {
       }
     } catch (error) {
       console.error('Erreur lors du chargement du solde:', error)
+      setError('Impossible de charger les comptes. Vérifiez votre connexion puis réessayez.')
     } finally {
       setLoading(false)
     }
@@ -108,6 +112,8 @@ function Accounts() {
       </div>
     )
   }
+
+  if (error) return <div className="error-message" role="alert"><span>{error}</span><button className="btn btn-primary" onClick={loadBalance}>Réessayer</button></div>
 
   return (
     <div className="accounts-container">

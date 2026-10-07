@@ -1,24 +1,24 @@
 /* Plus Page */
-.plus-page {
+:where(.screen-plus) .plus-page {
   min-height: 100vh;
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   padding-bottom: 80px;
 }
 
-.plus-header {
+:where(.screen-plus) .plus-header {
   background: white;
   padding: 20px;
   border-bottom: 1px solid #e5e7eb;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.page-header-with-back {
+:where(.screen-plus) .page-header-with-back {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.back-button {
+:where(.screen-plus) .back-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -32,12 +32,12 @@
   transition: all 0.3s ease;
 }
 
-.back-button:hover {
+:where(.screen-plus) .back-button:hover {
   background: #f3f4f6;
   color: #dc2626;
 }
 
-.page-header-with-back h1 {
+:where(.screen-plus) .page-header-with-back h1 {
   font-size: 20px;
   font-weight: 700;
   color: #1f2937;
@@ -45,18 +45,18 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.plus-content {
+:where(.screen-plus) .plus-content {
   padding: 20px;
   max-width: 600px;
   margin: 0 auto;
 }
 
 /* User Section */
-.user-section {
+:where(.screen-plus) .user-section {
   margin-bottom: 32px;
 }
 
-.user-card {
+:where(.screen-plus) .user-card {
   border-radius: 20px;
   padding: 24px;
   display: flex;
@@ -65,7 +65,7 @@
   color: white;
 }
 
-.user-avatar {
+:where(.screen-plus) .user-avatar {
   width: 64px;
   height: 64px;
   background: rgba(255, 255, 255, 0.2);
@@ -76,7 +76,7 @@
   backdrop-filter: blur(10px);
 }
 
-.user-info h3 {
+:where(.screen-plus) .user-info h3 {
   font-size: 18px;
   font-weight: 700;
   margin: 0 0 4px 0;
@@ -84,7 +84,7 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.user-info p {
+:where(.screen-plus) .user-info p {
   font-size: 14px;
   opacity: 0.9;
   margin: 0;
@@ -93,11 +93,11 @@
 }
 
 /* Menu Section */
-.menu-section {
+:where(.screen-plus) .menu-section {
   margin-bottom: 32px;
 }
 
-.menu-section h2 {
+:where(.screen-plus) .menu-section h2 {
   font-size: 18px;
   font-weight: 700;
   color: #1f2937;
@@ -105,12 +105,12 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.menu-grid {
+:where(.screen-plus) .menu-grid {
   display: grid;
   gap: 12px;
 }
 
-.menu-item {
+:where(.screen-plus) .menu-item {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -125,14 +125,14 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.menu-item:hover {
+:where(.screen-plus) .menu-item:hover {
   background: #f9fafb;
   border-color: #dc2626;
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(220, 38, 38, 0.1);
 }
 
-.menu-item-icon {
+:where(.screen-plus) .menu-item-icon {
   width: 48px;
   height: 48px;
   background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
@@ -145,17 +145,17 @@
   transition: all 0.3s ease;
 }
 
-.menu-item:hover .menu-item-icon {
+:where(.screen-plus) .menu-item:hover .menu-item-icon {
   background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   color: white;
   transform: scale(1.05);
 }
 
-.menu-item-content {
+:where(.screen-plus) .menu-item-content {
   flex: 1;
 }
 
-.menu-item-label {
+:where(.screen-plus) .menu-item-label {
   display: block;
   font-size: 16px;
   font-weight: 600;
@@ -164,7 +164,7 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.menu-item-description {
+:where(.screen-plus) .menu-item-description {
   display: block;
   font-size: 13px;
   color: #6b7280;
@@ -172,23 +172,23 @@
   line-height: 1.4;
 }
 
-.menu-item-arrow {
+:where(.screen-plus) .menu-item-arrow {
   color: #9ca3af;
   transition: all 0.3s ease;
   flex-shrink: 0;
 }
 
-.menu-item:hover .menu-item-arrow {
+:where(.screen-plus) .menu-item:hover .menu-item-arrow {
   color: #dc2626;
   transform: translateX(4px);
 }
 
 /* Logout Section */
-.logout-section {
+:where(.screen-plus) .logout-section {
   margin-top: 40px;
 }
 
-.logout-button {
+:where(.screen-plus) .logout-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -207,7 +207,7 @@
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1);
 }
 
-.logout-button:hover {
+:where(.screen-plus) .logout-button:hover {
   background: #dc2626;
   color: white;
   transform: translateY(-2px);
@@ -216,72 +216,72 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .plus-content {
+  :where(.screen-plus) .plus-content {
     padding: 16px;
   }
   
-  .plus-header {
+  :where(.screen-plus) .plus-header {
     padding: 16px;
   }
   
-  .user-card {
+  :where(.screen-plus) .user-card {
     padding: 20px;
     gap: 16px;
   }
   
-  .user-avatar {
+  :where(.screen-plus) .user-avatar {
     width: 56px;
     height: 56px;
   }
   
-  .menu-item {
+  :where(.screen-plus) .menu-item {
     padding: 16px;
     gap: 12px;
   }
   
-  .menu-item-icon {
+  :where(.screen-plus) .menu-item-icon {
     width: 44px;
     height: 44px;
   }
   
-  .menu-item-label {
+  :where(.screen-plus) .menu-item-label {
     font-size: 15px;
   }
   
-  .menu-item-description {
+  :where(.screen-plus) .menu-item-description {
     font-size: 12px;
   }
 }
 
 @media (max-width: 480px) {
-  .user-card {
+  :where(.screen-plus) .user-card {
     flex-direction: column;
     text-align: center;
     gap: 12px;
   }
   
-  .user-info h3 {
+  :where(.screen-plus) .user-info h3 {
     font-size: 16px;
   }
   
-  .user-info p {
+  :where(.screen-plus) .user-info p {
     font-size: 13px;
   }
   
-  .menu-item {
+  :where(.screen-plus) .menu-item {
     padding: 14px;
   }
   
-  .menu-item-icon {
+  :where(.screen-plus) .menu-item-icon {
     width: 40px;
     height: 40px;
   }
   
-  .menu-item-label {
+  :where(.screen-plus) .menu-item-label {
     font-size: 14px;
   }
   
-  .menu-item-description {
+  :where(.screen-plus) .menu-item-description {
     font-size: 11px;
   }
 }

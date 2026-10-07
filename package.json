@@ -7,18 +7,22 @@
     "esbuild": true
   },
   "dependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "axios": "^1.6.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0",
-    "axios": "^1.6.2",
     "react-icons": "^4.12.0",
-    "@vitejs/plugin-react": "^4.2.1",
+    "react-router-dom": "^6.20.0",
     "vite": "^5.0.8"
   },
   "scripts": {
     "dev": "vite --force",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify:mobile": "node scripts/verify-mobile.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1",
+    "sharp": "0.35.4"
   }
 }
-

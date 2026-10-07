@@ -1,5 +1,5 @@
 /* Container */
-.add-operation-container {
+:where(.screen-addoperation) .add-operation-container {
   max-width: 800px;
   margin: 0 auto;
   padding: 24px 20px;
@@ -7,14 +7,14 @@
 }
 
 /* Header */
-.add-operation-header {
+:where(.screen-addoperation) .add-operation-header {
   display: flex;
   align-items: flex-start;
   gap: 16px;
   margin-bottom: 32px;
 }
 
-.back-button {
+:where(.screen-addoperation) .back-button {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -29,28 +29,28 @@
   flex-shrink: 0;
 }
 
-.back-button:hover {
+:where(.screen-addoperation) .back-button:hover {
   background: transparent;
   border-color: var(--primary-color, #dc2626);
   color: var(--primary-color, #dc2626);
   transform: translateX(-2px);
 }
 
-.header-content h1 {
+:where(.screen-addoperation) .header-content h1 {
   font-size: 28px;
   font-weight: 700;
   color: var(--text-primary, #1f2937);
   margin: 0 0 8px 0;
 }
 
-.header-content p {
+:where(.screen-addoperation) .header-content p {
   font-size: 15px;
   color: var(--text-secondary, #6b7280);
   margin: 0;
 }
 
 /* Error Message */
-.error-message {
+:where(.screen-addoperation) .error-message {
   background: #fee2e2;
   border: 1px solid #fecaca;
   border-radius: 12px;
@@ -64,14 +64,14 @@
 }
 
 /* Form */
-.add-operation-form {
+:where(.screen-addoperation) .add-operation-form {
   display: flex;
   flex-direction: column;
   gap: 32px;
 }
 
 /* Form Section */
-.form-section {
+:where(.screen-addoperation) .form-section {
   background: var(--bg-primary, #ffffff);
   border-radius: 16px;
   padding: 28px;
@@ -79,7 +79,7 @@
   border: 1px solid var(--border-color, #e2e8f0);
 }
 
-.section-header {
+:where(.screen-addoperation) .section-header {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -88,7 +88,7 @@
   border-bottom: 2px solid var(--bg-tertiary, #f8f9fa);
 }
 
-.section-icon {
+:where(.screen-addoperation) .section-icon {
   width: 44px;
   height: 44px;
   border-radius: 12px;
@@ -99,7 +99,7 @@
   justify-content: center;
 }
 
-.section-header h2 {
+:where(.screen-addoperation) .section-header h2 {
   font-size: 20px;
   font-weight: 600;
   color: var(--text-primary, #1f2937);
@@ -107,18 +107,18 @@
 }
 
 /* Form Group */
-.form-group {
+:where(.screen-addoperation) .form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-bottom: 20px;
 }
 
-.form-group:last-child {
+:where(.screen-addoperation) .form-group:last-child {
   margin-bottom: 0;
 }
 
-.form-group label {
+:where(.screen-addoperation) .form-group label {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary, #1f2937);
@@ -127,13 +127,13 @@
   gap: 6px;
 }
 
-.required {
+:where(.screen-addoperation) .required {
   color: var(--primary-color, #dc2626);
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+:where(.screen-addoperation) .form-group input,
+:where(.screen-addoperation) .form-group select,
+:where(.screen-addoperation) .form-group textarea {
   width: 100%;
   padding: 12px 16px;
   border: 2px solid var(--border-color, #e2e8f0);
@@ -145,7 +145,7 @@
   font-family: inherit;
 }
 
-.form-group select {
+:where(.screen-addoperation) .form-group select {
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
@@ -163,7 +163,7 @@
   box-sizing: border-box;
 }
 
-.form-group select option {
+:where(.screen-addoperation) .form-group select option {
   padding: 10px 12px;
   white-space: normal;
   word-wrap: break-word;
@@ -173,39 +173,39 @@
   min-height: 36px;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+:where(.screen-addoperation) .form-group input:focus,
+:where(.screen-addoperation) .form-group select:focus,
+:where(.screen-addoperation) .form-group textarea:focus {
   outline: none;
   border-color: var(--primary-color, #dc2626);
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
-.form-group input::placeholder,
-.form-group textarea::placeholder {
+:where(.screen-addoperation) .form-group input::placeholder,
+:where(.screen-addoperation) .form-group textarea::placeholder {
   color: var(--text-tertiary, #9ca3af);
 }
 
-.form-group input:hover,
-.form-group select:hover,
-.form-group textarea:hover {
+:where(.screen-addoperation) .form-group input:hover,
+:where(.screen-addoperation) .form-group select:hover,
+:where(.screen-addoperation) .form-group textarea:hover {
   border-color: #cbd5e1;
 }
 
-.form-group textarea {
+:where(.screen-addoperation) .form-group textarea {
   resize: vertical;
   min-height: 80px;
 }
 
 /* Form Actions */
-.form-actions {
+:where(.screen-addoperation) .form-actions {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
   padding-top: 8px;
 }
 
-.slide-down {
+:where(.screen-addoperation) .slide-down {
   animation: slideDown 0.3s ease-out;
 }
 
@@ -220,7 +220,7 @@
   }
 }
 
-.btn {
+:where(.screen-addoperation) .btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -234,35 +234,35 @@
   font-family: inherit;
 }
 
-.btn-primary {
+:where(.screen-addoperation) .btn-primary {
   background: transparent;
   color: var(--text-primary, #1f2937);
   border: 2px solid var(--border-color, #e2e8f0);
 }
 
-.btn-primary:hover:not(:disabled) {
+:where(.screen-addoperation) .btn-primary:hover:not(:disabled) {
   background: transparent;
   border-color: var(--text-primary, #1f2937);
 }
 
-.btn-primary:disabled {
+:where(.screen-addoperation) .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.btn-secondary {
+:where(.screen-addoperation) .btn-secondary {
   background: transparent;
   color: var(--text-primary, #1f2937);
   border: 2px solid var(--border-color, #e2e8f0);
 }
 
-.btn-secondary:hover {
+:where(.screen-addoperation) .btn-secondary:hover {
   background: transparent;
   border-color: var(--text-primary, #1f2937);
 }
 
 /* Warning Message */
-.warning-message {
+:where(.screen-addoperation) .warning-message {
   display: flex;
   align-items: flex-start;
   gap: 8px;
@@ -275,20 +275,20 @@
   font-size: 13px;
 }
 
-.warning-message svg {
+:where(.screen-addoperation) .warning-message svg {
   flex-shrink: 0;
   margin-top: 2px;
 }
 
 /* Transfer Type Options */
-.transfer-type-options {
+:where(.screen-addoperation) .transfer-type-options {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: 8px;
 }
 
-.transfer-option {
+:where(.screen-addoperation) .transfer-option {
   display: block;
   cursor: pointer;
   border: 2px solid var(--border-color, #e2e8f0);
@@ -298,64 +298,64 @@
   background: var(--bg-primary, #ffffff);
 }
 
-.transfer-option:hover {
+:where(.screen-addoperation) .transfer-option:hover {
   border-color: var(--primary-color, #dc2626);
   background: #fef2f2;
 }
 
-.transfer-option.selected {
+:where(.screen-addoperation) .transfer-option.selected {
   border-color: var(--primary-color, #dc2626);
   background: #fef2f2;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
-.transfer-option input[type="radio"] {
+:where(.screen-addoperation) .transfer-option input[type="radio"] {
   display: none;
 }
 
-.transfer-option-content {
+:where(.screen-addoperation) .transfer-option-content {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.transfer-option-header {
+:where(.screen-addoperation) .transfer-option-header {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.transfer-option-header svg {
+:where(.screen-addoperation) .transfer-option-header svg {
   color: var(--primary-color, #dc2626);
   flex-shrink: 0;
 }
 
-.transfer-option-title {
+:where(.screen-addoperation) .transfer-option-title {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary, #1f2937);
 }
 
-.transfer-option-details {
+:where(.screen-addoperation) .transfer-option-details {
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-left: 32px;
 }
 
-.transfer-speed {
+:where(.screen-addoperation) .transfer-speed {
   font-size: 14px;
   color: var(--text-secondary, #6b7280);
 }
 
-.transfer-limit {
+:where(.screen-addoperation) .transfer-limit {
   font-size: 13px;
   color: var(--text-tertiary, #9ca3af);
   font-weight: 500;
 }
 
 /* Confirmation Modal */
-.confirmation-modal-overlay {
+:where(.screen-addoperation) .confirmation-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -379,7 +379,7 @@
   }
 }
 
-.confirmation-modal {
+:where(.screen-addoperation) .confirmation-modal {
   background: var(--bg-primary, #ffffff);
   border-radius: 16px;
   max-width: 500px;
@@ -401,7 +401,7 @@
   }
 }
 
-.confirmation-header {
+:where(.screen-addoperation) .confirmation-header {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -409,36 +409,36 @@
   border-bottom: 2px solid var(--bg-tertiary, #f8f9fa);
 }
 
-.confirmation-icon {
+:where(.screen-addoperation) .confirmation-icon {
   color: var(--primary-color, #dc2626);
   flex-shrink: 0;
 }
 
-.confirmation-header h3 {
+:where(.screen-addoperation) .confirmation-header h3 {
   font-size: 20px;
   font-weight: 700;
   color: var(--text-primary, #1f2937);
   margin: 0;
 }
 
-.confirmation-content {
+:where(.screen-addoperation) .confirmation-content {
   padding: 24px;
 }
 
-.confirmation-info {
+:where(.screen-addoperation) .confirmation-info {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.confirmation-text {
+:where(.screen-addoperation) .confirmation-text {
   font-size: 15px;
   color: var(--text-secondary, #6b7280);
   margin: 0;
   text-align: center;
 }
 
-.confirmation-amount {
+:where(.screen-addoperation) .confirmation-amount {
   display: flex;
   justify-content: center;
   padding: 20px;
@@ -446,13 +446,13 @@
   border-radius: 12px;
 }
 
-.amount-value {
+:where(.screen-addoperation) .amount-value {
   font-size: 32px;
   font-weight: 700;
   color: var(--primary-color, #dc2626);
 }
 
-.confirmation-details {
+:where(.screen-addoperation) .confirmation-details {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -460,19 +460,19 @@
   border-top: 1px solid var(--border-color, #e2e8f0);
 }
 
-.confirmation-detail-item {
+:where(.screen-addoperation) .confirmation-detail-item {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.detail-label {
+:where(.screen-addoperation) .detail-label {
   font-size: 13px;
   color: var(--text-secondary, #6b7280);
   font-weight: 500;
 }
 
-.detail-value {
+:where(.screen-addoperation) .detail-value {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -481,11 +481,11 @@
   font-weight: 600;
 }
 
-.detail-value svg {
+:where(.screen-addoperation) .detail-value svg {
   color: var(--primary-color, #dc2626);
 }
 
-.confirmation-note {
+:where(.screen-addoperation) .confirmation-note {
   display: flex;
   align-items: flex-start;
   gap: 8px;
@@ -498,23 +498,23 @@
   margin-top: 8px;
 }
 
-.confirmation-note svg {
+:where(.screen-addoperation) .confirmation-note svg {
   flex-shrink: 0;
   margin-top: 2px;
 }
 
-.confirmation-note div {
+:where(.screen-addoperation) .confirmation-note div {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.confirmation-note strong {
+:where(.screen-addoperation) .confirmation-note strong {
   font-weight: 600;
   color: #78350f;
 }
 
-.confirmation-actions {
+:where(.screen-addoperation) .confirmation-actions {
   display: flex;
   gap: 12px;
   padding: 16px 24px 24px 24px;
@@ -524,21 +524,21 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .add-operation-container {
+  :where(.screen-addoperation) .add-operation-container {
     padding: 16px;
   }
 
-  .form-section {
+  :where(.screen-addoperation) .form-section {
     padding: 20px 16px;
   }
 
-  .form-group {
+  :where(.screen-addoperation) .form-group {
     margin-bottom: 16px;
   }
 
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
+  :where(.screen-addoperation) .form-group input,
+  :where(.screen-addoperation) .form-group select,
+  :where(.screen-addoperation) .form-group textarea {
     font-size: 16px; /* Évite le zoom automatique sur iOS */
     padding: 14px 12px;
     min-height: 48px;
@@ -548,46 +548,46 @@
     appearance: none;
   }
 
-  .form-group select {
+  :where(.screen-addoperation) .form-group select {
     padding-right: 36px;
     background-position: right 12px center;
     background-size: 10px;
   }
 
-  .form-actions {
+  :where(.screen-addoperation) .form-actions {
     flex-direction: column-reverse;
     gap: 10px;
   }
 
-  .form-actions .btn {
+  :where(.screen-addoperation) .form-actions .btn {
     width: 100%;
     justify-content: center;
   }
 
-  .header-content h1 {
+  :where(.screen-addoperation) .header-content h1 {
     font-size: 24px;
   }
 }
 
 @media (max-width: 480px) {
-  .add-operation-header {
+  :where(.screen-addoperation) .add-operation-header {
     flex-direction: column;
     gap: 12px;
   }
 
-  .section-header {
+  :where(.screen-addoperation) .section-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
 
-  .form-section {
+  :where(.screen-addoperation) .form-section {
     padding: 16px 12px;
   }
 
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
+  :where(.screen-addoperation) .form-group input,
+  :where(.screen-addoperation) .form-group select,
+  :where(.screen-addoperation) .form-group textarea {
     font-size: 16px;
     padding: 12px;
     min-height: 44px;
@@ -597,76 +597,76 @@
     appearance: none;
   }
 
-  .form-group select {
+  :where(.screen-addoperation) .form-group select {
     padding-right: 32px;
     background-position: right 10px center;
     background-size: 10px;
   }
 
-  .form-group label {
+  :where(.screen-addoperation) .form-group label {
     font-size: 13px;
   }
 
-  .form-group select option {
+  :where(.screen-addoperation) .form-group select option {
     font-size: 14px;
     padding: 10px 8px;
   }
 
-  .transfer-type-options {
+  :where(.screen-addoperation) .transfer-type-options {
     gap: 10px;
   }
 
-  .transfer-option {
+  :where(.screen-addoperation) .transfer-option {
     padding: 12px;
   }
 
-  .transfer-option-details {
+  :where(.screen-addoperation) .transfer-option-details {
     margin-left: 28px;
   }
 
-  .confirmation-modal {
+  :where(.screen-addoperation) .confirmation-modal {
     max-width: 100%;
     margin: 0;
     border-radius: 16px 16px 0 0;
   }
 
-  .confirmation-header {
+  :where(.screen-addoperation) .confirmation-header {
     padding: 20px 16px 12px 16px;
   }
 
-  .confirmation-content {
+  :where(.screen-addoperation) .confirmation-content {
     padding: 20px 16px;
   }
 
-  .confirmation-actions {
+  :where(.screen-addoperation) .confirmation-actions {
     flex-direction: column-reverse;
     padding: 12px 16px 20px 16px;
   }
 
-  .confirmation-actions .btn {
+  :where(.screen-addoperation) .confirmation-actions .btn {
     width: 100%;
     justify-content: center;
   }
 
-  .amount-value {
+  :where(.screen-addoperation) .amount-value {
     font-size: 28px;
   }
 }
 
 /* Compact Account Select */
-.account-select-compact {
+:where(.screen-addoperation) .account-select-compact {
   font-size: 14px !important;
   padding: 10px 40px 10px 14px !important;
   min-height: 40px !important;
 }
 
-.account-select-compact option {
+:where(.screen-addoperation) .account-select-compact option {
   font-size: 13px !important;
   padding: 8px 10px !important;
   min-height: 32px !important;
 }
 
-.selected-account-iban {
+:where(.screen-addoperation) .selected-account-iban {
   margin-top: 8px;
   padding: 8px 12px;
   background: #f8f9fa;
@@ -678,7 +678,7 @@
 }
 
 /* Account Info Box */
-.account-info-box {
+:where(.screen-addoperation) .account-info-box {
   margin-top: 12px;
   padding: 12px 16px;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -686,19 +686,19 @@
   border: 1px solid #dee2e6;
 }
 
-.account-balance {
+:where(.screen-addoperation) .account-balance {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 14px;
 }
 
-.account-balance span {
+:where(.screen-addoperation) .account-balance span {
   color: #6c757d;
   font-weight: 500;
 }
 
-.account-balance strong {
+:where(.screen-addoperation) .account-balance strong {
   color: #000000;
   font-size: 16px;
   font-weight: 700;

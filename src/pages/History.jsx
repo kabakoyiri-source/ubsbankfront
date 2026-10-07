@@ -23,6 +23,7 @@ const History = () => {
   const navigate = useNavigate()
   const [operations, setOperations] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState(TABS.LAST_20)
   const [swipedOperationId, setSwipedOperationId] = useState(null)
 
@@ -33,6 +34,7 @@ const History = () => {
   const fetchOperations = async () => {
     try {
       setLoading(true)
+      setError('')
       const res = await api.get('/operations?admin=true')
       if (res.data?.success) {
         const operationsData = res.data.data || []
@@ -40,6 +42,8 @@ const History = () => {
         console.log('Operations with isScheduled:', operationsData.filter(op => op.isScheduled === true))
         setOperations(operationsData)
       }
+    } catch {
+      setError('Impossible de charger l’historique. Vérifiez votre connexion puis réessayez.')
     } finally {
       setLoading(false)
     }
@@ -190,6 +194,7 @@ const History = () => {
 
   return (
     <div className="history-screen">
+      {error && <div className="error-message" role="alert"><span>{error}</span><button className="btn btn-primary" onClick={fetchOperations}>Réessayer</button></div>}
       <header className="history-top">
         <button className="bac" onClick={() => navigate(-1)}>←</button>
         <h1>Transactions</h1>

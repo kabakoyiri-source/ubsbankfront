@@ -1,0 +1,136 @@
+:root {
+  --app-nav-height: 64px;
+  --app-safe-top: env(safe-area-inset-top, 0px);
+  --app-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --app-safe-left: env(safe-area-inset-left, 0px);
+  --app-safe-right: env(safe-area-inset-right, 0px);
+  --color-primary: #c90022;
+  --color-primary-light: #fff1f2;
+  --color-primary-dark: #a3001c;
+  --color-background: #f5f5f5;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-text: #1f2937;
+  --color-text-light: #6b7280;
+  --color-border: #e5e7eb;
+  --spacing: 16px;
+  --border-radius: 16px;
+  --primary-color: #c90022;
+  --primary-dark: #a3001c;
+  --primary-light: #fff1f2;
+  color-scheme: light;
+}
+html { background: #fff; scroll-padding-bottom: calc(88px + var(--app-safe-bottom)); }
+body { min-width: 0; background: #f5f5f5; -webkit-tap-highlight-color: transparent; }
+button, input, select, textarea { font: inherit; }
+button, a { touch-action: manipulation; }
+img { max-width: 100%; }
+:focus-visible { outline: 2px solid #c90022; outline-offset: 4px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.startup-screen {
+  min-height: 100vh; min-height: 100dvh; background: #fff;
+  display: flex; align-items: center; justify-content: center; position: relative;
+  padding: var(--app-safe-top) 24px var(--app-safe-bottom);
+}
+.startup-screen img { width: 240px; max-width: 72vw; height: auto; object-fit: contain; }
+.startup-indicator {
+  position: absolute; top: calc(50% + 80px); width: 20px; height: 20px;
+  border: 2px solid #eee; border-top-color: #c90022; border-radius: 50%; animation: startup-spin .8s linear infinite;
+}
+@keyframes startup-spin { to { transform: rotate(360deg); } }
+.app-error { padding: max(32px, var(--app-safe-top)) 24px; }
+.app-error p { margin: 16px 0; }
+.pwa-status {
+  position: fixed; z-index: 2000; bottom: calc(var(--app-nav-height) + var(--app-safe-bottom) + 12px);
+  left: max(12px, var(--app-safe-left)); right: max(12px, var(--app-safe-right));
+  max-width: 560px; margin: auto; padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+  border-radius: 12px; background: #222; color: #fff; box-shadow: 0 4px 16px #0002; font-size: 14px;
+}
+.pwa-status button { border: 0; border-radius: 8px; padding: 10px 12px; background: #fff; color: #222; cursor: pointer; }
+
+.screen-dashboard .dashboard-container { min-height: 0; padding-bottom: 0; }
+.screen-dashboard .dashboard-header { padding: 16px 0; box-shadow: none; background: #f5f5f5; }
+.screen-dashboard .dashboard-header, .screen-profile .profile-header, .screen-about .about-header { top: var(--app-safe-top); }
+.screen-dashboard .header-left, .screen-dashboard .home-section { min-width: 0; }
+.screen-dashboard .greeting-text { overflow-wrap: anywhere; }
+.screen-dashboard .header-right { gap: 4px; flex-shrink: 0; }
+.screen-dashboard .profile-avatar { min-width: 44px; min-height: 44px; justify-content: center; }
+.screen-dashboard .home-label { font-size: 25px; line-height: 1.25; }
+.screen-dashboard .quick-actions { border-radius: 16px; padding: 20px 8px; }
+.screen-dashboard .trading-portfolio { margin: 16px 0; padding: 20px; }
+.screen-dashboard .favorites-section { margin: 0; padding: 20px; }
+.screen-dashboard .portfolio-title { font-size: 15px; }
+.screen-dashboard .portfolio-main { gap: 8px; margin-bottom: 8px; }
+.screen-dashboard .portfolio-chart { margin: 8px 0; }
+.screen-dashboard .portfolio-amount { font-size: clamp(22px, 6vw, 30px); overflow-wrap: anywhere; }
+.screen-dashboard .custody-row { gap: 12px; flex-wrap: wrap; }
+.screen-dashboard .custody-row span:last-child { margin-left: auto; overflow-wrap: anywhere; }
+.screen-dashboard .favorite-amount { font-size: clamp(18px, 5vw, 24px); overflow-wrap: anywhere; }
+.screen-dashboard .favorite-left, .screen-dashboard .favorite-left > div { min-width: 0; }
+.screen-dashboard .dashboard-error { background: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.screen-dashboard .dashboard-error p { margin-bottom: 12px; }
+.screen-dashboard .loading-container { min-height: 60vh; }
+.screen-dashboard .sidebar-menu { height: 100dvh; padding-top: var(--app-safe-top); padding-bottom: var(--app-safe-bottom); }
+.screen-dashboard .sidebar-close { width: 44px; height: 44px; }
+
+.screen-auth .auth-container { min-height: 100vh; min-height: 100dvh; padding: max(24px, var(--app-safe-top)) max(16px, var(--app-safe-right)) max(24px, var(--app-safe-bottom)) max(16px, var(--app-safe-left)); }
+.screen-auth .auth-card { padding: 32px 24px; box-shadow: 0 4px 24px #0001; }
+.screen-auth .auth-header { margin-bottom: 32px; }
+.screen-auth .auth-header h1 { font-size: clamp(24px, 7vw, 32px); }
+.screen-auth .logo-icon { width: 160px; height: auto; filter: none; }
+.screen-auth .auth-footer p { margin-bottom: 0; }
+.screen-auth .btn-auth { width: 100%; background: #c90022; color: #fff; }
+.screen-auth .form-input:focus { border-color: #c90022; box-shadow: 0 0 0 3px #c9002214; }
+
+.screen-history .history-screen, .screen-operationdetails .operation-details-container,
+.screen-loadbalance .load-balance-container, .screen-accounts .accounts-container,
+.screen-cards .cards-page, .screen-plus .plus-page, .screen-profile .profile-page,
+.screen-about .about-page { min-height: 0; padding-bottom: 24px; }
+.screen-accounts .account-iban, .screen-accounts .account-balance { overflow-wrap: anywhere; }
+.screen-plus .user-avatar { background: #fff1f2; color: #c90022; flex-shrink: 0; }
+.screen-plus .user-card { background: white; border: 1px solid #e5e7eb; }
+.screen-plus .user-info, .screen-plus .menu-item-content { min-width: 0; overflow-wrap: anywhere; }
+.screen-plus .menu-item:disabled { opacity: .6; cursor: default; transform: none; border-color: #e5e7eb; box-shadow: none; }
+.screen-plus .menu-item:disabled .menu-item-arrow { visibility: hidden; }
+.content-wrapper .loading-container { min-height: 60vh; }
+.content-wrapper .error-message { flex-wrap: wrap; }
+.screen-addoperation .confirmation-modal-overlay,
+.screen-loadbalance .modal-overlay, .screen-profile .modal-overlay {
+  z-index: 3000;
+  padding: calc(16px + var(--app-safe-top)) calc(16px + var(--app-safe-right)) calc(16px + var(--app-safe-bottom)) calc(16px + var(--app-safe-left));
+}
+.screen-addoperation .confirmation-modal,
+.screen-loadbalance .modal-content, .screen-profile .modal-content {
+  max-height: calc(100dvh - 32px - var(--app-safe-top) - var(--app-safe-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.screen-cards .card-container { width: 100%; padding: 8px 0; }
+.screen-cards .bank-card { width: min(100%, 400px); height: auto; aspect-ratio: 1.6; }
+.screen-cards .card-number { font-size: clamp(14px, 4.3vw, 24px); letter-spacing: 1px; margin: 12px 0; }
+.screen-cards .card-face { padding: 16px; }
+.screen-cards .card-holder { min-width: 0; max-width: 75%; }
+.screen-cards .card-holder .value { font-size: 12px; overflow-wrap: anywhere; }
+.screen-cards .rib-value-white { font-size: clamp(10px, 3vw, 16px); letter-spacing: 0; }
+.screen-cards .magnetic-strip, .screen-cards .signature-panel { height: 30px; margin-top: 12px; }
+.screen-cards .card-info-text { margin-top: 12px; }
+.screen-cards .card-tier { top: 16px; left: 16px; padding: 3px 10px; }
+
+@media (max-width: 768px) {
+  .form-group input, .form-group select, .form-group textarea, .form-input { font-size: 16px; min-height: 48px; }
+  .screen-addoperation .account-select-compact { font-size: 16px !important; min-height: 48px !important; }
+  .form-group, .form-row > *, .page-header-with-back h1 { min-width: 0; }
+  .page-header-with-back h1 { overflow-wrap: anywhere; }
+  .form-row { flex-wrap: wrap; }
+  .form-group.half { flex-basis: 100%; }
+  .card { padding: 20px 16px; }
+}
+@media (max-width: 360px) {
+  .screen-dashboard .home-label { font-size: 22px; }
+  .screen-dashboard .profile-section { gap: 4px; }
+  .screen-dashboard .header-icon-btn { width: 36px; }
+  .screen-auth .auth-card { padding: 24px 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

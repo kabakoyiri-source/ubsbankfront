@@ -18,17 +18,27 @@ import Plus from './pages/Plus'
 import Profile from './pages/Profile'
 import About from './pages/About'
 import Layout from './components/Layout'
+import StartupScreen from './components/StartupScreen'
+import PwaStatus from './components/PwaStatus'
 
 function PrivateRoute({ children }) {
   const { isAuthenticated } = useAuth()
-  return isAuthenticated ? children : <Navigate to="/login" />
+  return isAuthenticated ? children : <Navigate to="/login" replace />
 }
 
 function AppRoutes() {
+  const { loading, authCheckError, checkAuth } = useAuth()
+  if (loading) return <StartupScreen />
+  if (authCheckError) return (
+    <div className="app-error" role="alert">
+      <p>{authCheckError}</p>
+      <button className="btn btn-primary" onClick={checkAuth}>Réessayer</button>
+    </div>
+  )
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<div className="screen-auth"><Login /></div>} />
+      <Route path="/register" element={<div className="screen-auth"><Register /></div>} />
       <Route
         path="/"
         element={
@@ -189,10 +199,10 @@ function App() {
     <AuthProvider>
       <Router>
         <AppRoutes />
+        <PwaStatus />
       </Router>
     </AuthProvider>
   )
 }
 
 export default App
-

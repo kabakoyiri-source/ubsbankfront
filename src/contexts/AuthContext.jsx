@@ -16,12 +16,15 @@ export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [authCheckError, setAuthCheckError] = useState(null)
 
   useEffect(() => {
     checkAuth()
   }, [])
 
   const checkAuth = async () => {
+    setLoading(true)
+    setAuthCheckError(null)
     const token = localStorage.getItem('token')
     if (token) {
       try {
@@ -31,7 +34,8 @@ export function AuthProvider({ children }) {
           setIsAuthenticated(true)
         }
       } catch (error) {
-        localStorage.removeItem('token')
+        if (error.response?.status === 401) localStorage.removeItem('token')
+        else setAuthCheckError('Impossible de vérifier votre connexion. Vérifiez Internet puis réessayez.')
         setIsAuthenticated(false)
       }
     }
@@ -57,7 +61,7 @@ export function AuthProvider({ children }) {
         message = error.response.data?.message || `Erreur ${error.response.status}: ${error.response.statusText}`
       } else if (error.request) {
         // La requête a été faite mais aucune réponse n'a été reçue
-        message = 'Impossible de joindre le serveur. Vérifiez que le backend ngrok est actif.'
+        message = 'Impossible de joindre le serveur. Vérifiez votre connexion Internet puis réessayez.'
       } else {
         // Une erreur s'est produite lors de la configuration de la requête
         message = error.message || 'Erreur de connexion'
@@ -92,6 +96,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     localStorage.removeItem('token')
+    localStorage.removeItem('selectedOperation')
     setUser(null)
     setIsAuthenticated(false)
   }
@@ -101,6 +106,8 @@ export function AuthProvider({ children }) {
     setUser,
     isAuthenticated,
     loading,
+    authCheckError,
+    checkAuth,
     error,
     login,
     register,

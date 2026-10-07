@@ -1,10 +1,10 @@
-.operation-details-container {
+:where(.screen-operationdetails) .operation-details-container {
   min-height: 100vh;
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   padding-bottom: 80px;
 }
 
-.details-header {
+:where(.screen-operationdetails) .details-header {
   background: white;
   padding: 20px;
   border-bottom: 1px solid #e5e7eb;
@@ -14,7 +14,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.back-button {
+:where(.screen-operationdetails) .back-button {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -29,12 +29,12 @@
   transition: all 0.3s ease;
 }
 
-.back-button:hover {
+:where(.screen-operationdetails) .back-button:hover {
   background: #f3f4f6;
   color: #dc2626;
 }
 
-.details-title {
+:where(.screen-operationdetails) .details-title {
   font-size: 20px;
   font-weight: 700;
   color: #1f2937;
@@ -42,13 +42,13 @@
   flex: 1;
 }
 
-.details-content {
+:where(.screen-operationdetails) .details-content {
   padding: 20px;
   max-width: 600px;
   margin: 0 auto;
 }
 
-.amount-card {
+:where(.screen-operationdetails) .amount-card {
   background: white;
   border-radius: 16px;
   padding: 24px;
@@ -60,7 +60,7 @@
   border: 1px solid #e5e7eb;
 }
 
-.amount-icon {
+:where(.screen-operationdetails) .amount-icon {
   width: 80px;
   height: 50px;
   display: flex;
@@ -71,11 +71,11 @@
   padding: 8px;
 }
 
-.amount-info {
+:where(.screen-operationdetails) .amount-info {
   flex: 1;
 }
 
-.amount-value {
+:where(.screen-operationdetails) .amount-value {
   font-size: 28px;
   font-weight: 800;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -83,15 +83,15 @@
   letter-spacing: -0.5px;
 }
 
-.amount-value.positive {
+:where(.screen-operationdetails) .amount-value.positive {
   color: #000000;
 }
 
-.amount-value.negative {
+:where(.screen-operationdetails) .amount-value.negative {
   color: #000000;
 }
 
-.amount-type {
+:where(.screen-operationdetails) .amount-type {
   font-size: 14px;
   font-weight: 500;
   color: #6b7280;
@@ -99,7 +99,7 @@
   letter-spacing: 0.5px;
 }
 
-.info-section {
+:where(.screen-operationdetails) .info-section {
   background: white;
   border-radius: 16px;
   padding: 20px;
@@ -108,7 +108,7 @@
   border: 1px solid #e5e7eb;
 }
 
-.section-title {
+:where(.screen-operationdetails) .section-title {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -119,16 +119,16 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.section-title svg {
+:where(.screen-operationdetails) .section-title svg {
   color: #dc2626;
 }
 
-.info-grid {
+:where(.screen-operationdetails) .info-grid {
   display: grid;
   gap: 16px;
 }
 
-.info-item {
+:where(.screen-operationdetails) .info-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -136,18 +136,18 @@
   border-bottom: 1px solid #f3f4f6;
 }
 
-.info-item:last-child {
+:where(.screen-operationdetails) .info-item:last-child {
   border-bottom: none;
 }
 
-.info-label {
+:where(.screen-operationdetails) .info-label {
   font-size: 14px;
   font-weight: 500;
   color: #6b7280;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.info-value {
+:where(.screen-operationdetails) .info-value {
   font-size: 15px;
   font-weight: 600;
   color: #1f2937;
@@ -155,7 +155,7 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.info-value.status {
+:where(.screen-operationdetails) .info-value.status {
   color: #059669;
   background: #ecfdf5;
   padding: 4px 12px;
@@ -164,22 +164,22 @@
   font-weight: 600;
 }
 
-.info-item.full-width {
+:where(.screen-operationdetails) .info-item.full-width {
   grid-column: 1 / -1; /* Prend toute la largeur de la grille */
 }
 
-.info-item.full-width .info-value {
+:where(.screen-operationdetails) .info-item.full-width .info-value {
   white-space: pre-wrap; /* Permet les retours à la ligne */
   word-break: break-word; /* Empêche le débordement du texte */
 }
 
-.action-buttons {
+:where(.screen-operationdetails) .action-buttons {
   display: flex;
   gap: 12px;
   margin-top: 24px;
 }
 
-.primary-btn {
+:where(.screen-operationdetails) .primary-btn {
   flex: 1;
   background: #dc2626;
   color: white;
@@ -194,13 +194,13 @@
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
 }
 
-.primary-btn:hover {
+:where(.screen-operationdetails) .primary-btn:hover {
   background: #b91c1c;
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
 }
 
-.loading-container {
+:where(.screen-operationdetails) .loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -209,7 +209,7 @@
   gap: 16px;
 }
 
-.spinner {
+:where(.screen-operationdetails) .spinner {
   width: 40px;
   height: 40px;
   border: 4px solid #f3f4f6;
@@ -223,7 +223,7 @@
   100% { transform: rotate(360deg); }
 }
 
-.error-container {
+:where(.screen-operationdetails) .error-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -234,13 +234,13 @@
   padding: 20px;
 }
 
-.error-container p {
+:where(.screen-operationdetails) .error-container p {
   font-size: 16px;
   color: #6b7280;
   margin: 0;
 }
 
-.back-btn {
+:where(.screen-operationdetails) .back-btn {
   background: #dc2626;
   color: white;
   border: none;
@@ -252,60 +252,60 @@
   transition: all 0.3s ease;
 }
 
-.back-btn:hover {
+:where(.screen-operationdetails) .back-btn:hover {
   background: #b91c1c;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .details-content {
+  :where(.screen-operationdetails) .details-content {
     padding: 16px;
   }
   
-  .amount-card {
+  :where(.screen-operationdetails) .amount-card {
     padding: 20px;
     flex-direction: column;
     text-align: center;
     gap: 16px;
   }
   
-  .amount-value {
+  :where(.screen-operationdetails) .amount-value {
     font-size: 24px;
   }
   
-  .info-item {
+  :where(.screen-operationdetails) .info-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
   }
   
-  .info-value {
+  :where(.screen-operationdetails) .info-value {
     text-align: left;
   }
 }
 
 @media (max-width: 480px) {
-  .details-header {
+  :where(.screen-operationdetails) .details-header {
     padding: 16px;
   }
   
-  .details-title {
+  :where(.screen-operationdetails) .details-title {
     font-size: 18px;
   }
   
-  .amount-card {
+  :where(.screen-operationdetails) .amount-card {
     padding: 16px;
   }
   
-  .amount-value {
+  :where(.screen-operationdetails) .amount-value {
     font-size: 22px;
   }
   
-  .info-section {
+  :where(.screen-operationdetails) .info-section {
     padding: 16px;
   }
   
-  .section-title {
+  :where(.screen-operationdetails) .section-title {
     font-size: 16px;
   }
 }

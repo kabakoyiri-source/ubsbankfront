@@ -1,10 +1,10 @@
-.profile-page {
+:where(.screen-profile) .profile-page {
   min-height: 100vh;
   background-color: var(--bg-secondary);
   padding-bottom: 80px;
 }
 
-.profile-header {
+:where(.screen-profile) .profile-header {
   background: white;
   padding: 20px;
   position: sticky;
@@ -13,13 +13,13 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.profile-content {
+:where(.screen-profile) .profile-content {
   padding: 20px;
   max-width: 600px;
   margin: 0 auto;
 }
 
-.profile-avatar-section {
+:where(.screen-profile) .profile-avatar-section {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -30,7 +30,7 @@
   box-shadow: var(--shadow-sm);
 }
 
-.large-avatar {
+:where(.screen-profile) .large-avatar {
   width: 80px;
   height: 80px;
   background: #f1f5f9;
@@ -42,36 +42,36 @@
   margin-bottom: 15px;
 }
 
-.profile-avatar-section h2 {
+:where(.screen-profile) .profile-avatar-section h2 {
   font-size: 1.2rem;
   color: var(--text-primary);
   margin-bottom: 5px;
 }
 
-.account-type {
+:where(.screen-profile) .account-type {
   color: var(--text-secondary);
   font-size: 0.9rem;
 }
 
-.profile-form-container {
+:where(.screen-profile) .profile-form-container {
   background: white;
   padding: 25px;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-sm);
 }
 
-.form-group input:disabled {
+:where(.screen-profile) .form-group input:disabled {
   background-color: #f8fafc;
   color: var(--text-secondary);
   border-color: transparent;
 }
 
-.form-group input.editable {
+:where(.screen-profile) .form-group input.editable {
   background-color: white;
   border-color: #e2e8f0;
 }
 
-.edit-actions {
+:where(.screen-profile) .edit-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
@@ -79,7 +79,7 @@
 }
 
 /* Modal Styles */
-.modal-overlay {
+:where(.screen-profile) .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -93,7 +93,7 @@
   padding: 20px;
 }
 
-.modal-content {
+:where(.screen-profile) .modal-content {
   background: white;
   border-radius: var(--border-radius-lg);
   padding: 25px;
@@ -114,22 +114,22 @@
   }
 }
 
-.modal-content h3 {
+:where(.screen-profile) .modal-content h3 {
   margin-bottom: 10px;
   color: var(--text-primary);
 }
 
-.modal-content p {
+:where(.screen-profile) .modal-content p {
   color: var(--text-secondary);
   margin-bottom: 20px;
   font-size: 0.95rem;
 }
 
-.password-input-wrapper {
+:where(.screen-profile) .password-input-wrapper {
   position: relative;
 }
 
-.input-icon {
+:where(.screen-profile) .input-icon {
   position: absolute;
   left: 12px;
   top: 50%;
@@ -137,11 +137,11 @@
   color: var(--text-tertiary);
 }
 
-.password-input-wrapper input {
+:where(.screen-profile) .password-input-wrapper input {
   padding-left: 40px;
 }
 
-.modal-actions {
+:where(.screen-profile) .modal-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;

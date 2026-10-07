@@ -5,6 +5,7 @@ const baseURL = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`
 
 const api = axios.create({
   baseURL,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -20,7 +21,7 @@ api.interceptors.request.use(
     // Ajouter les headers pour ngrok et localtunnel
     config.headers['ngrok-skip-browser-warning'] = 'true'
     config.headers['bypass-tunnel-reminder'] = 'true'
-    console.log('API Request:', config.method?.toUpperCase(), config.url, config.baseURL)
+
     return config
   },
   (error) => {
@@ -42,7 +43,7 @@ api.interceptors.response.use(
       message: error.message
     })
     
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !['/auth/login', '/auth/register'].includes(error.config?.url)) {
       localStorage.removeItem('token')
       window.location.href = '/login'
     }

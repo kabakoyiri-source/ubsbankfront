@@ -5,6 +5,8 @@ node_modules/
 
 # Testing
 /coverage
+/.npm-cache
+/qa
 
 # Production
 /build

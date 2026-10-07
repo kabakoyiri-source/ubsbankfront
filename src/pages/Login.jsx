@@ -32,9 +32,9 @@ function Login() {
       <div className="auth-card">
         <div className="auth-header">
           <div className="auth-logo">
-            <img src="/images/ubs.png" alt="UBS Logo" className="logo-icon" />
+            <img src="/images/logo-wordmark.png" alt="UBS Logo" className="logo-icon" />
           </div>
-          <h2>E-banking Login</h2>
+          <h2>Connexion e-banking</h2>
         </div>
 
         {error && (
@@ -46,11 +46,15 @@ function Login() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label>
+            <label htmlFor="login-email">
               <FiMail size={18} />
               Email
             </label>
             <input
+              id="login-email"
+              autoComplete="username"
+              inputMode="email"
+              autoCapitalize="none"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -61,11 +65,13 @@ function Login() {
           </div>
 
           <div className="form-group">
-            <label>
+            <label htmlFor="login-password">
               <FiLock size={18} />
               Mot de passe
             </label>
             <input
+              id="login-password"
+              autoComplete="current-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

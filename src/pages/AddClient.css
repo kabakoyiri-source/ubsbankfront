@@ -1,5 +1,5 @@
 /* Container */
-.add-client-container {
+:where(.screen-addclient) .add-client-container {
   max-width: 800px;
   margin: 0 auto;
   padding: 24px 20px;
@@ -7,14 +7,14 @@
 }
 
 /* Header */
-.add-client-header {
+:where(.screen-addclient) .add-client-header {
   display: flex;
   align-items: flex-start;
   gap: 16px;
   margin-bottom: 32px;
 }
 
-.back-button {
+:where(.screen-addclient) .back-button {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -29,28 +29,28 @@
   flex-shrink: 0;
 }
 
-.back-button:hover {
+:where(.screen-addclient) .back-button:hover {
   background: transparent;
   border-color: var(--primary-color, #dc2626);
   color: var(--primary-color, #dc2626);
   transform: translateX(-2px);
 }
 
-.header-content h1 {
+:where(.screen-addclient) .header-content h1 {
   font-size: 28px;
   font-weight: 700;
   color: var(--text-primary, #1f2937);
   margin: 0 0 8px 0;
 }
 
-.header-content p {
+:where(.screen-addclient) .header-content p {
   font-size: 15px;
   color: var(--text-secondary, #6b7280);
   margin: 0;
 }
 
 /* Error Message */
-.error-message {
+:where(.screen-addclient) .error-message {
   background: #fee2e2;
   border: 1px solid #fecaca;
   border-radius: 12px;
@@ -64,14 +64,14 @@
 }
 
 /* Form */
-.add-client-form {
+:where(.screen-addclient) .add-client-form {
   display: flex;
   flex-direction: column;
   gap: 32px;
 }
 
 /* Form Section */
-.form-section {
+:where(.screen-addclient) .form-section {
   background: var(--bg-primary, #ffffff);
   border-radius: 16px;
   padding: 28px;
@@ -79,7 +79,7 @@
   border: 1px solid var(--border-color, #e2e8f0);
 }
 
-.section-header {
+:where(.screen-addclient) .section-header {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -88,7 +88,7 @@
   border-bottom: 2px solid var(--bg-tertiary, #f8f9fa);
 }
 
-.section-icon {
+:where(.screen-addclient) .section-icon {
   width: 44px;
   height: 44px;
   border-radius: 12px;
@@ -99,7 +99,7 @@
   justify-content: center;
 }
 
-.section-header h2 {
+:where(.screen-addclient) .section-header h2 {
   font-size: 20px;
   font-weight: 600;
   color: var(--text-primary, #1f2937);
@@ -107,20 +107,20 @@
 }
 
 /* Form Grid */
-.form-grid {
+:where(.screen-addclient) .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
 }
 
 /* Form Group */
-.form-group {
+:where(.screen-addclient) .form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.form-group label {
+:where(.screen-addclient) .form-group label {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary, #1f2937);
@@ -129,11 +129,11 @@
   gap: 6px;
 }
 
-.required {
+:where(.screen-addclient) .required {
   color: var(--primary-color, #dc2626);
 }
 
-.form-group input {
+:where(.screen-addclient) .form-group input {
   width: 100%;
   padding: 12px 16px;
   border: 2px solid var(--border-color, #e2e8f0);
@@ -145,21 +145,21 @@
   font-family: inherit;
 }
 
-.form-group input:focus {
+:where(.screen-addclient) .form-group input:focus {
   outline: none;
   border-color: var(--primary-color, #dc2626);
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
-.form-group input::placeholder {
+:where(.screen-addclient) .form-group input::placeholder {
   color: var(--text-tertiary, #9ca3af);
 }
 
-.form-group input:hover {
+:where(.screen-addclient) .form-group input:hover {
   border-color: #cbd5e1;
 }
 
-.form-group textarea {
+:where(.screen-addclient) .form-group textarea {
   width: 100%;
   padding: 12px 16px;
   border: 2px solid var(--border-color, #e2e8f0);
@@ -173,29 +173,29 @@
   min-height: 80px;
 }
 
-.form-group textarea:focus {
+:where(.screen-addclient) .form-group textarea:focus {
   outline: none;
   border-color: var(--primary-color, #dc2626);
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
-.form-group textarea::placeholder {
+:where(.screen-addclient) .form-group textarea::placeholder {
   color: var(--text-tertiary, #9ca3af);
 }
 
-.form-group textarea:hover {
+:where(.screen-addclient) .form-group textarea:hover {
   border-color: #cbd5e1;
 }
 
 /* Form Actions */
-.form-actions {
+:where(.screen-addclient) .form-actions {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
   padding-top: 8px;
 }
 
-.btn {
+:where(.screen-addclient) .btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -209,68 +209,68 @@
   font-family: inherit;
 }
 
-.btn-primary {
+:where(.screen-addclient) .btn-primary {
   background: var(--bg-primary, #ffffff);
   color: var(--text-primary, #1f2937);
   border: 2px solid var(--border-color, #e2e8f0);
 }
 
-.btn-primary:hover:not(:disabled) {
+:where(.screen-addclient) .btn-primary:hover:not(:disabled) {
   background: transparent;
   border-color: var(--text-primary, #1f2937);
 }
 
-.btn-primary:disabled {
+:where(.screen-addclient) .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.btn-secondary {
+:where(.screen-addclient) .btn-secondary {
   background: transparent;
   color: var(--text-primary, #1f2937);
   border: 2px solid var(--border-color, #e2e8f0);
 }
 
-.btn-secondary:hover {
+:where(.screen-addclient) .btn-secondary:hover {
   background: transparent;
   border-color: var(--text-primary, #1f2937);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .add-client-container {
+  :where(.screen-addclient) .add-client-container {
     padding: 16px;
   }
 
-  .form-section {
+  :where(.screen-addclient) .form-section {
     padding: 20px;
   }
 
-  .form-grid {
+  :where(.screen-addclient) .form-grid {
     grid-template-columns: 1fr;
   }
 
-  .form-actions {
+  :where(.screen-addclient) .form-actions {
     flex-direction: column-reverse;
   }
 
-  .form-actions .btn {
+  :where(.screen-addclient) .form-actions .btn {
     width: 100%;
     justify-content: center;
   }
 
-  .header-content h1 {
+  :where(.screen-addclient) .header-content h1 {
     font-size: 24px;
   }
 }
 
 @media (max-width: 480px) {
-  .add-client-header {
+  :where(.screen-addclient) .add-client-header {
     flex-direction: column;
     gap: 12px;
   }
 
-  .section-header {
+  :where(.screen-addclient) .section-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;

@@ -1,23 +1,7 @@
 /* Variables */
-:root {
-  --color-primary: #dc2626;
-  --color-primary-light: #fee2e2;
-  --color-primary-dark: #991b1b;
-  --color-background: #f5f5f5;
-  --color-white: #ffffff;
-  --color-black: #000000;
-  --color-text: #1f2937;
-  --color-text-light: #6b7280;
-  --color-border: #e5e7eb;
-  --spacing: 16px;
-  --border-radius: 16px;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
 
 /* Container */
-.load-balance-container {
+:where(.screen-loadbalance) .load-balance-container {
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
@@ -26,17 +10,17 @@
 }
 
 /* Header */
-.load-balance-header {
+:where(.screen-loadbalance) .load-balance-header {
   margin-bottom: 24px;
 }
 
-.page-header-with-back {
+:where(.screen-loadbalance) .page-header-with-back {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.back-button {
+:where(.screen-loadbalance) .back-button {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -50,27 +34,27 @@
   transition: all 0.3s ease;
 }
 
-.back-button:hover {
+:where(.screen-loadbalance) .back-button:hover {
   background: var(--color-primary-light);
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
 
-.header-content h1 {
+:where(.screen-loadbalance) .header-content h1 {
   font-size: 24px;
   font-weight: 600;
   color: var(--color-text);
   margin: 0 0 4px 0;
 }
 
-.header-content p {
+:where(.screen-loadbalance) .header-content p {
   font-size: 14px;
   color: var(--color-text-light);
   margin: 0;
 }
 
 /* Error Message */
-.error-message {
+:where(.screen-loadbalance) .error-message {
   background: #fee2e2;
   color: #991b1b;
   padding: 12px 16px;
@@ -81,7 +65,7 @@
 }
 
 /* Form */
-.load-balance-form {
+:where(.screen-loadbalance) .load-balance-form {
   background: var(--color-white);
   border-radius: var(--border-radius);
   padding: 24px;
@@ -89,18 +73,18 @@
 }
 
 /* Operation Type Selector */
-.operation-type-selector {
+:where(.screen-loadbalance) .operation-type-selector {
   margin-bottom: 32px;
 }
 
-.operation-type-selector h3 {
+:where(.screen-loadbalance) .operation-type-selector h3 {
   font-size: 16px;
   font-weight: 600;
   color: var(--color-text);
   margin: 0 0 16px 0;
 }
 
-.type-buttons {
+:where(.screen-loadbalance) .type-buttons {
   display: flex;
   gap: 12px;
   background: var(--color-background);
@@ -108,7 +92,7 @@
   border-radius: 8px;
 }
 
-.type-btn {
+:where(.screen-loadbalance) .type-btn {
   flex: 1;
   padding: 12px 16px;
   border: none;
@@ -122,25 +106,25 @@
   font-family: inherit;
 }
 
-.type-btn:hover {
+:where(.screen-loadbalance) .type-btn:hover {
   color: var(--color-text);
 }
 
-.type-btn.active {
+:where(.screen-loadbalance) .type-btn.active {
   background: var(--color-white);
   color: var(--color-primary);
   box-shadow: var(--shadow-sm);
 }
 
-.form-section {
+:where(.screen-loadbalance) .form-section {
   margin-bottom: 32px;
 }
 
-.form-section:last-of-type {
+:where(.screen-loadbalance) .form-section:last-of-type {
   margin-bottom: 0;
 }
 
-.section-header {
+:where(.screen-loadbalance) .section-header {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -149,7 +133,7 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-.section-icon {
+:where(.screen-loadbalance) .section-icon {
   width: 40px;
   height: 40px;
   border-radius: 8px;
@@ -160,7 +144,7 @@
   color: var(--color-primary);
 }
 
-.section-header h2 {
+:where(.screen-loadbalance) .section-header h2 {
   font-size: 18px;
   font-weight: 600;
   color: var(--color-text);
@@ -168,15 +152,15 @@
 }
 
 /* Form Groups */
-.form-group {
+:where(.screen-loadbalance) .form-group {
   margin-bottom: 24px;
 }
 
-.form-group:last-child {
+:where(.screen-loadbalance) .form-group:last-child {
   margin-bottom: 0;
 }
 
-.form-group label {
+:where(.screen-loadbalance) .form-group label {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -186,16 +170,16 @@
   margin-bottom: 8px;
 }
 
-.form-group label svg {
+:where(.screen-loadbalance) .form-group label svg {
   color: var(--color-text-light);
 }
 
-.required {
+:where(.screen-loadbalance) .required {
   color: var(--color-primary);
 }
 
-.form-group input,
-.form-group textarea {
+:where(.screen-loadbalance) .form-group input,
+:where(.screen-loadbalance) .form-group textarea {
   width: 100%;
   padding: 12px 16px;
   border: 1px solid var(--color-border);
@@ -208,24 +192,24 @@
   box-sizing: border-box;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
+:where(.screen-loadbalance) .form-group input:focus,
+:where(.screen-loadbalance) .form-group textarea:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
-.form-group input::placeholder,
-.form-group textarea::placeholder {
+:where(.screen-loadbalance) .form-group input::placeholder,
+:where(.screen-loadbalance) .form-group textarea::placeholder {
   color: var(--color-text-light);
 }
 
-.form-group textarea {
+:where(.screen-loadbalance) .form-group textarea {
   resize: vertical;
   min-height: 80px;
 }
 
-.input-hint {
+:where(.screen-loadbalance) .input-hint {
   display: block;
   font-size: 12px;
   color: var(--color-text-light);
@@ -233,7 +217,7 @@
 }
 
 /* Form Actions */
-.form-actions {
+:where(.screen-loadbalance) .form-actions {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
@@ -242,7 +226,7 @@
   border-top: 1px solid var(--color-border);
 }
 
-.btn {
+:where(.screen-loadbalance) .btn {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -258,59 +242,59 @@
   font-family: inherit;
 }
 
-.btn:disabled {
+:where(.screen-loadbalance) .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.btn-primary {
+:where(.screen-loadbalance) .btn-primary {
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
 
-.btn-primary:hover:not(:disabled) {
+:where(.screen-loadbalance) .btn-primary:hover:not(:disabled) {
   background: var(--color-primary);
   color: var(--color-white);
 }
 
-.btn-secondary {
+:where(.screen-loadbalance) .btn-secondary {
   border-color: var(--color-border);
   color: var(--color-text);
 }
 
-.btn-secondary:hover:not(:disabled) {
+:where(.screen-loadbalance) .btn-secondary:hover:not(:disabled) {
   background: var(--color-background);
   border-color: var(--color-text-light);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .load-balance-container {
+  :where(.screen-loadbalance) .load-balance-container {
     padding: 16px;
   }
 
-  .load-balance-form {
+  :where(.screen-loadbalance) .load-balance-form {
     padding: 20px;
   }
 
-  .header-content h1 {
+  :where(.screen-loadbalance) .header-content h1 {
     font-size: 20px;
   }
 
-  .type-buttons {
+  :where(.screen-loadbalance) .type-buttons {
     flex-direction: column;
     gap: 8px;
   }
 
-  .type-btn {
+  :where(.screen-loadbalance) .type-btn {
     padding: 14px 16px;
   }
 
-  .form-actions {
+  :where(.screen-loadbalance) .form-actions {
     flex-direction: column-reverse;
   }
 
-  .btn {
+  :where(.screen-loadbalance) .btn {
     width: 100%;
     justify-content: center;
   }
@@ -318,7 +302,7 @@
 
 
 /* Credit Card Section */
-.subsection-title {
+:where(.screen-loadbalance) .subsection-title {
   margin: 30px 0 15px 0;
   font-size: 16px;
   color: var(--color-text);
@@ -326,17 +310,17 @@
   padding-bottom: 10px;
 }
 
-.form-row {
+:where(.screen-loadbalance) .form-row {
   display: flex;
   gap: 16px;
 }
 
-.form-group.half {
+:where(.screen-loadbalance) .form-group.half {
   flex: 1;
 }
 
 /* Modal Styles */
-.modal-overlay {
+:where(.screen-loadbalance) .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -350,7 +334,7 @@
   padding: 20px;
 }
 
-.modal-content.security-modal {
+:where(.screen-loadbalance) .modal-content.security-modal {
   background: white;
   border-radius: var(--border-radius);
   padding: 25px;
@@ -360,26 +344,26 @@
   animation: slideIn 0.3s ease-out;
 }
 
-.modal-header h3 {
+:where(.screen-loadbalance) .modal-header h3 {
   margin: 0 0 10px 0;
   color: var(--color-text);
 }
 
-.modal-header p {
+:where(.screen-loadbalance) .modal-header p {
   color: var(--color-text-light);
   line-height: 1.5;
   margin-bottom: 20px;
   font-size: 14px;
 }
 
-.security-input {
+:where(.screen-loadbalance) .security-input {
   font-size: 20px;
   letter-spacing: 2px;
   text-align: center;
   font-weight: bold;
 }
 
-.error-text {
+:where(.screen-loadbalance) .error-text {
   color: var(--color-primary);
   font-size: 14px;
   margin-top: 10px;

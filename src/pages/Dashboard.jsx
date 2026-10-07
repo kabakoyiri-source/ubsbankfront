@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
@@ -48,23 +48,50 @@ const MastercardIcon = ({ size = 32, className = '' }) => (
 import './Dashboard.css'
 
 function Dashboard() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [clients, setClients] = useState([])
   const [operations, setOperations] = useState([])
-  const [adminBalance, setAdminBalance] = useState(0)
+  const [adminBalance, setAdminBalance] = useState({ chf: 0, eur: 0, usd: 0 })
+  const [loadError, setLoadError] = useState('')
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [showBalance, setShowBalance] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const menuRef = useRef(null)
   const [selectedCurrency, setSelectedCurrency] = useState('chf')
 
   useEffect(() => {
     loadData()
   }, [])
 
+  useEffect(() => {
+    if (!sidebarOpen) return
+    const previousFocus = document.activeElement
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    menuRef.current?.querySelector('button')?.focus()
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setSidebarOpen(false)
+      if (event.key !== 'Tab') return
+      const items = menuRef.current?.querySelectorAll('button, a[href]')
+      if (!items?.length) return
+      const first = items[0], last = items[items.length - 1]
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', onKeyDown)
+      previousFocus?.focus()
+    }
+  }, [sidebarOpen])
+
   const loadData = async () => {
+    setLoading(true)
+    setLoadError('')
     try {
       const [clientsRes, operationsRes] = await Promise.all([
         api.get('/clients'),
@@ -80,10 +107,10 @@ function Dashboard() {
       allOperations.forEach(op => {
         const currency = (op.currency || 'chf').toLowerCase()
         if (op.status === 'completed') {
-          balance[currency] += (op.amount || 0)
+          if (currency in balance) balance[currency] += Number(op.amount || 0)
         } else if (op.status === 'pending') {
           // Pour les opérations pending, on soustrait toujours la valeur absolue
-          balance[currency] -= Math.abs(op.amount || 0)
+          if (currency in balance) balance[currency] -= Math.abs(Number(op.amount || 0))
         }
       })
       setAdminBalance(balance)
@@ -93,6 +120,7 @@ function Dashboard() {
       setOperations(recentOperations)
     } catch (error) {
       console.error('Erreur lors du chargement des données:', error)
+      setLoadError('Impossible de charger vos comptes. Vérifiez votre connexion puis réessayez.')
     } finally {
       setLoading(false)
     }
@@ -105,8 +133,8 @@ function Dashboard() {
     return true
   }).filter(client =>
     (client.firstName && client.firstName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    client.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.accountNumber.includes(searchTerm)
+    (client.lastName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (client.accountNumber || '').includes(searchTerm)
   )
 
   const activeClients = clients.filter(c => c.status === 'active').length
@@ -129,7 +157,7 @@ function Dashboard() {
   // Fonction de déconnexion
   const handleLogout = () => {
     // Supprimer le token d'authentification du localStorage
-    localStorage.removeItem('token')
+    logout()
     // Rediriger vers la page de login
     navigate('/login')
   }
@@ -159,6 +187,13 @@ function Dashboard() {
     )
   }
 
+  if (loadError) return (
+    <div className="dashboard-error" role="alert">
+      <p>{loadError}</p>
+      <button className="btn btn-primary" onClick={loadData}>Réessayer</button>
+    </div>
+  )
+
   return (
     <div className="dashboard-container">
       {/* Header */}
@@ -186,13 +221,13 @@ function Dashboard() {
             </div>
           </div>
           <div className="header-right">
-            <button className="header-icon-btn">
+            <button className="header-icon-btn" aria-label="Ouvrir le menu" onClick={() => setSidebarOpen(true)}>
               <FiMoreHorizontal size={24} />
             </button>
             <button 
               className={`header-icon-btn notification-btn ${hasRecentAction ? 'has-recent' : ''}`}
+              aria-label="Consulter les notifications"
               onClick={handleNotificationClick}
-              aria-label="Notifications"
             >
               <BiMessage size={24} />
               {hasRecentAction && (
@@ -248,7 +283,7 @@ function Dashboard() {
             >USD</button>
           </div>
           <span className="portfolio-amount">
-            {selectedCurrency.toUpperCase()} {adminBalance && adminBalance[selectedCurrency] ? adminBalance[selectedCurrency].toLocaleString('de-DE').replace(/\./g, "'") : '0.00'}
+            {selectedCurrency.toUpperCase()} {formatAmount(adminBalance[selectedCurrency])}
           </span>
           <div className="portfolio-gain">
             <span className="gain-percent">+2.04%</span>
@@ -271,7 +306,7 @@ function Dashboard() {
             
             {/* Label 0% */}
             <text
-              x="340"
+              x="318"
               y="80"
               fontSize="12"
               fill="#999"
@@ -311,7 +346,7 @@ function Dashboard() {
 
         <div className="custody-row">
           <span>Compte de garde</span>
-          <span>{selectedCurrency.toUpperCase()} {adminBalance && adminBalance[selectedCurrency] ? adminBalance[selectedCurrency].toLocaleString('de-DE').replace(/\./g, "'") : '0.00'}</span>
+          <span>{selectedCurrency.toUpperCase()} {formatAmount(adminBalance[selectedCurrency])}</span>
         </div>
       </div>
 
@@ -324,7 +359,7 @@ function Dashboard() {
             <span className="favorite-icon">⛃</span>
             <div>
               <div className="favorite-label">Compte CHF</div>
-              <div className="favorite-amount">CHF {adminBalance && adminBalance.chf ? adminBalance.chf.toLocaleString('fr-CH', { minimumFractionDigits: 2 }) : '0.00'}</div>
+              <div className="favorite-amount">CHF {formatAmount(adminBalance.chf)}</div>
             </div>
           </div>
           <span className="favorite-arrow">›</span>
@@ -340,40 +375,16 @@ function Dashboard() {
 
             <div>
               <div className="favorite-label">Compte EUR</div>
-              <div className="favorite-amount">EUR {adminBalance && adminBalance.eur ? adminBalance.eur.toLocaleString('fr-CH', { minimumFractionDigits: 2 }) : '0.00'}</div>
+              <div className="favorite-amount">EUR {formatAmount(adminBalance.eur)}</div>
             </div>
           </div>
           <span className="favorite-arrow">›</span>
         </div>
       </div>
 
-      {/* Bottom Navigation */}
-      <div className="bottom-nav">
-        <Link to="/" className="nav-item active">
-          <FiHome size={24} />
-          <span className="nav-label">Accueil</span>
-        </Link>
-        <Link to="/operations/new" className="nav-item">
-          <FiRepeat size={24} />
-          <span className="nav-label">Paiements</span>
-        </Link>
-        <Link to="/accounts" className="nav-item">
-          <FiLayers size={24} />
-          <span className="nav-label">Comptes</span>
-        </Link>
-        <Link to="/cards" className="nav-item">
-          <FiCreditCard size={24} />
-          <span className="nav-label">Cartes</span>
-        </Link>
-        <Link to="/more" className="nav-item">
-          <FiMoreHorizontal size={24} />
-          <span className="nav-label">Plus</span>
-        </Link>
-      </div>
-
       {/* Sidebar Menu */}
       <div className={`sidebar-overlay ${sidebarOpen ? 'active' : ''}`} onClick={() => setSidebarOpen(false)}></div>
-      <div className={`sidebar-menu ${sidebarOpen ? 'open' : ''}`}>
+      <div ref={menuRef} className={`sidebar-menu ${sidebarOpen ? 'open' : ''}`} role="dialog" aria-label="Menu" aria-modal={sidebarOpen ? true : undefined} aria-hidden={!sidebarOpen} inert={sidebarOpen ? undefined : ''}>
         <div className="sidebar-header">
           <h2>Menu</h2>
           <button 

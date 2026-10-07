@@ -1,5 +1,5 @@
 /* Container */
-.accounts-container {
+:where(.screen-accounts) .accounts-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px 20px;
@@ -7,24 +7,24 @@
 }
 
 /* Header */
-.accounts-header {
+:where(.screen-accounts) .accounts-header {
   margin-bottom: 32px;
 }
 
-.page-header-with-back {
+:where(.screen-accounts) .page-header-with-back {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.page-header-with-back h1 {
+:where(.screen-accounts) .page-header-with-back h1 {
   font-size: 28px;
   font-weight: 700;
   color: var(--text-primary, #1f2937);
   margin: 0;
 }
 
-.back-button {
+:where(.screen-accounts) .back-button {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -39,7 +39,7 @@
   flex-shrink: 0;
 }
 
-.back-button:hover {
+:where(.screen-accounts) .back-button:hover {
   background: transparent;
   border-color: var(--primary-color, #dc2626);
   color: var(--primary-color, #dc2626);
@@ -47,7 +47,7 @@
 }
 
 /* Loading */
-.loading-container {
+:where(.screen-accounts) .loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -56,7 +56,7 @@
   gap: 16px;
 }
 
-.spinner-icon {
+:where(.screen-accounts) .spinner-icon {
   animation: spin 1s linear infinite;
   color: var(--primary-color, #dc2626);
 }
@@ -67,14 +67,14 @@
 }
 
 /* Grid */
-.accounts-grid {
+:where(.screen-accounts) .accounts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 24px;
 }
 
 /* Account Card */
-.account-card {
+:where(.screen-accounts) .account-card {
   background: #fff;
   border-radius: 16px;
   padding: 24px;
@@ -83,19 +83,19 @@
   transition: all 0.3s ease;
 }
 
-.account-card:hover {
+:where(.screen-accounts) .account-card:hover {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   transform: translateY(-4px);
 }
 
-.account-card-header {
+:where(.screen-accounts) .account-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
 }
 
-.account-icon {
+:where(.screen-accounts) .account-icon {
   width: 56px;
   height: 56px;
   border-radius: 12px;
@@ -104,7 +104,7 @@
   justify-content: center;
 }
 
-.eye-btn {
+:where(.screen-accounts) .eye-btn {
   background: transparent;
   border: none;
   cursor: pointer;
@@ -114,33 +114,33 @@
   color: #6b7280;
 }
 
-.eye-btn:hover {
+:where(.screen-accounts) .eye-btn:hover {
   background: #f3f4f6;
   color: #1f2937;
 }
 
 /* Account Body */
-.account-card-body {
+:where(.screen-accounts) .account-card-body {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.account-name {
+:where(.screen-accounts) .account-name {
   font-size: 22px;
   font-weight: 700;
   color: #1f2937;
   margin: 0;
 }
 
-.account-type {
+:where(.screen-accounts) .account-type {
   font-size: 14px;
   color: #6b7280;
   margin: 0;
   font-weight: 500;
 }
 
-.account-description {
+:where(.screen-accounts) .account-description {
   font-size: 14px;
   color: #9ca3af;
   margin: 0;
@@ -148,14 +148,14 @@
 }
 
 /* IBAN Box */
-.account-iban-box {
+:where(.screen-accounts) .account-iban-box {
   background: #f9fafb;
   border-radius: 10px;
   padding: 12px 16px;
   border: 1px solid #e5e7eb;
 }
 
-.account-iban-box label {
+:where(.screen-accounts) .account-iban-box label {
   display: block;
   font-size: 12px;
   color: #6b7280;
@@ -165,7 +165,7 @@
   letter-spacing: 0.5px;
 }
 
-.account-iban {
+:where(.screen-accounts) .account-iban {
   font-family: 'Courier New', monospace;
   font-size: 15px;
   font-weight: 600;
@@ -174,7 +174,7 @@
 }
 
 /* Balance Box */
-.account-balance-box {
+:where(.screen-accounts) .account-balance-box {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border-radius: 12px;
   padding: 16px;
@@ -182,7 +182,7 @@
   margin-top: 8px;
 }
 
-.account-balance-box label {
+:where(.screen-accounts) .account-balance-box label {
   display: block;
   font-size: 13px;
   color: #6c757d;
@@ -190,7 +190,7 @@
   margin-bottom: 8px;
 }
 
-.account-balance {
+:where(.screen-accounts) .account-balance {
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -199,38 +199,38 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .accounts-container {
+  :where(.screen-accounts) .accounts-container {
     padding: 20px 16px;
   }
 
-  .accounts-grid {
+  :where(.screen-accounts) .accounts-grid {
     grid-template-columns: 1fr;
   }
 
-  .account-card {
+  :where(.screen-accounts) .account-card {
     padding: 20px;
   }
 
-  .account-name {
+  :where(.screen-accounts) .account-name {
     font-size: 20px;
   }
 
-  .account-balance {
+  :where(.screen-accounts) .account-balance {
     font-size: 24px;
   }
 }
 
 @media (max-width: 480px) {
-  .page-header-with-back h1 {
+  :where(.screen-accounts) .page-header-with-back h1 {
     font-size: 24px;
   }
 
-  .account-icon {
+  :where(.screen-accounts) .account-icon {
     width: 48px;
     height: 48px;
   }
 
-  .account-iban {
+  :where(.screen-accounts) .account-iban {
     font-size: 13px;
   }
 }
