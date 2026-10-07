@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react'
+import { formatAmount } from '../services/money'
+import AmountInput from '../components/AmountInput'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { FiArrowLeft, FiUser, FiRepeat, FiDollarSign, FiFileText, FiSave, FiX, FiLayers, FiClock, FiZap, FiAlertCircle } from 'react-icons/fi'
 import api from '../services/api'
+import { calculateBalances } from '../services/balances'
 import { useAuth } from '../contexts/AuthContext'
 import './AddOperation.css'
 
@@ -24,6 +27,8 @@ function AddOperation() {
     transferType: 'instant' // 'instant' ou 'delayed'
   })
   const [loading, setLoading] = useState(false)
+  const [balanceLoading, setBalanceLoading] = useState(true)
+  const [balanceError, setBalanceError] = useState('')
   const [error, setError] = useState('')
   const [showConfirmation, setShowConfirmation] = useState(false)
 
@@ -41,14 +46,6 @@ function AddOperation() {
     loadAdminAccount()
   }, [])
 
-  const formatAmount = (amount) => {
-    if (amount === undefined || amount === null) return '0,00'
-    const absoluteAmount = Math.abs(amount)
-    const fixed = absoluteAmount.toFixed(2)
-    const [intPart, decPart] = fixed.split('.')
-    const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, "'")
-    return `${amount < 0 ? '-' : ''}${formattedInt},${decPart}`
-  }
 
   const loadClients = async () => {
     try {
@@ -64,11 +61,14 @@ function AddOperation() {
   }
 
   const loadAdminAccount = async () => {
+    setBalanceLoading(true)
+    setBalanceError('')
     try {
       const [userResponse, operationsResponse] = await Promise.all([
         api.get('/auth/me'),
-        api.get('/operations?admin=true')
+        api.get('/operations')
       ])
+      if (!userResponse.data.success || !operationsResponse.data.success) throw new Error('Chargement impossible')
       
       if (userResponse.data.success) {
         setAdminAccount(userResponse.data.user)
@@ -80,20 +80,11 @@ function AddOperation() {
 
       if (operationsResponse.data.success) {
         const operations = operationsResponse.data.data || []
-        let balance = { chf: 0, eur: 0, usd: 0 }
-        operations.forEach(op => {
-          const currency = (op.currency || 'chf').toLowerCase()
-          if (op.status === 'completed') {
-            balance[currency] += (op.amount || 0)
-          } else if (op.status === 'pending') {
-            balance[currency] -= Math.abs(op.amount || 0)
-          }
-        })
-        setAdminBalance(balance)
+        setAdminBalance(calculateBalances(operations))
       }
     } catch (error) {
-      console.error('Erreur lors du chargement du compte admin:', error)
-    }
+      setBalanceError('Impossible de charger le solde disponible. Réessayez.')
+    } finally { setBalanceLoading(false) }
   }
 
   const handleChange = (e) => {
@@ -128,14 +119,23 @@ function AddOperation() {
     }
 
     const amount = parseFloat(formData.amount)
-    if (isNaN(amount) || amount <= 0) {
+    if (!Number.isFinite(amount) || amount <= 0 || Math.abs(amount * 100 - Math.round(amount * 100)) > .000001) {
       setError('Veuillez saisir un montant valide')
+      return
+    }
+
+    if (balanceLoading || balanceError) {
+      setError('Chargez le solde disponible avant de continuer.')
+      return
+    }
+    if (Math.round(amount * 100) > Math.round(adminBalance[formData.adminAccountType] * 100)) {
+      setError(`Solde insuffisant sur le compte ${formData.currency}. Ajoutez des fonds dans les paramètres.`)
       return
     }
 
     // Validation pour virement instantané
     if (formData.transferType === 'instant' && amount > MAX_INSTANT_AMOUNT) {
-      setError(`Le montant maximum pour un virement instantané est de ${MAX_INSTANT_AMOUNT.toLocaleString('fr-CH')} CHF. Veuillez choisir un virement en 2 jours ouvrables pour ce montant.`)
+      setError(`Le montant maximum pour un virement instantané est de ${formatAmount(MAX_INSTANT_AMOUNT, 0)} ${formData.currency}. Veuillez choisir un virement en 2 jours ouvrables pour ce montant.`)
       return
     }
 
@@ -165,17 +165,16 @@ function AddOperation() {
         isScheduled: formData.transferType === 'delayed'
       }
 
-      console.log('Payload envoyé:', payload)
-
       const response = await api.post('/operations/transfer', payload)
       if (response.data.success) {
         navigate('/operations')
-      }
+      } else throw new Error(response.data.message || 'Le virement a échoué.')
     } catch (error) {
       console.error('Erreur complète:', error.response?.data || error)
       const errorMessage = error.response?.data?.message || error.message || 'Erreur lors de la création de l\'opération'
       setError(errorMessage)
       setShowConfirmation(false)
+      loadAdminAccount()
     } finally {
       setLoading(false)
     }
@@ -209,6 +208,7 @@ function AddOperation() {
           <span>{error}</span>
         </div>
       )}
+      {balanceError && <div className="error-message" role="alert"><span>{balanceError}</span><button type="button" className="btn btn-primary" onClick={loadAdminAccount}>Réessayer</button></div>}
 
       <form onSubmit={handleSubmit} className="add-operation-form">
         {/* Informations de l'opération */}
@@ -250,7 +250,7 @@ function AddOperation() {
           <div className="form-group">
             <label htmlFor="adminAccountType">
               <FiLayers size={16} /> 
-              Compte source (Admin) <span className="required">*</span>
+              Compte source <span className="required">*</span>
             </label>
             <select
               id="adminAccountType"
@@ -277,27 +277,26 @@ function AddOperation() {
                 </div>
               </div>
             )}
+            <button type="button" className="funds-shortcut" onClick={() => navigate('/settings')}>Ajouter des fonds</button>
           </div>
 
           <div className="form-group">
             <label htmlFor="amount">
+              <FiDollarSign size={20} aria-hidden="true" />
               Montant ({formData.currency}) <span className="required">*</span>
             </label>
-            <input
-              type="number"
+            <AmountInput
               id="amount"
               name="amount"
               value={formData.amount}
-              onChange={handleChange}
-              step="0.01"
-              min="0.01"
-              placeholder="0.00"
+              onValueChange={amount => { setFormData(previous => ({ ...previous, amount })); setError('') }}
+              placeholder="0,00"
               required
             />
             {formData.amount && parseFloat(formData.amount) > MAX_INSTANT_AMOUNT && formData.transferType === 'instant' && (
               <div className="warning-message">
                 <FiAlertCircle size={16} /> 
-                <span>Le montant maximum pour un virement instantané est de {MAX_INSTANT_AMOUNT.toLocaleString('fr-CH')} CHF. Veuillez choisir "Virement en 2 jours ouvrables" pour ce montant.</span>
+                <span>Le montant maximum pour un virement instantané est de {formatAmount(MAX_INSTANT_AMOUNT, 0)} {formData.currency}. Veuillez choisir "Virement en 2 jours ouvrables" pour ce montant.</span>
               </div>
             )}
           </div>
@@ -323,7 +322,7 @@ function AddOperation() {
                   </div>
                   <div className="transfer-option-details">
                     <span className="transfer-speed">Traitement immédiat</span>
-                    <span className="transfer-limit">Maximum {MAX_INSTANT_AMOUNT.toLocaleString('fr-CH')} CHF</span>
+                    <span className="transfer-limit">Maximum {formatAmount(MAX_INSTANT_AMOUNT, 0)} {formData.currency}</span>
                   </div>
                 </div>
               </label>
@@ -380,7 +379,7 @@ function AddOperation() {
           <button 
             type="submit" 
             className="btn btn-primary" 
-            disabled={loading || showConfirmation}
+            disabled={loading || showConfirmation || balanceLoading || !!balanceError}
           >
             <FiSave size={18} /> 
             <span>Continuer</span>
@@ -432,7 +431,7 @@ function AddOperation() {
                       <div>
                         <strong>Traitement immédiat</strong>
                         <br />
-                        <span>Le montant maximum pour un virement instantané est de <strong>{MAX_INSTANT_AMOUNT.toLocaleString('fr-CH')} CHF</strong>.</span>
+                        <span>Le montant maximum pour un virement instantané est de <strong>{formatAmount(MAX_INSTANT_AMOUNT, 0)} {formData.currency}</strong>.</span>
                       </div>
                     </div>
                   ) : (

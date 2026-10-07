@@ -1,5 +1,5 @@
 :root {
-  --app-nav-height: 64px;
+  --app-nav-height: 50px;
   --app-safe-top: env(safe-area-inset-top, 0px);
   --app-safe-bottom: env(safe-area-inset-bottom, 0px);
   --app-safe-left: env(safe-area-inset-left, 0px);
@@ -49,24 +49,37 @@ img { max-width: 100%; }
 .pwa-status button { border: 0; border-radius: 8px; padding: 10px 12px; background: #fff; color: #222; cursor: pointer; }
 
 .screen-dashboard .dashboard-container { min-height: 0; padding-bottom: 0; }
-.screen-dashboard .dashboard-header { padding: 16px 0; box-shadow: none; background: #f5f5f5; }
+.screen-dashboard .dashboard-header { padding: 12px 0; box-shadow: none; background: #f5f5f5; }
 .screen-dashboard .dashboard-header, .screen-profile .profile-header, .screen-about .about-header { top: var(--app-safe-top); }
-.screen-dashboard .header-left, .screen-dashboard .home-section { min-width: 0; }
-.screen-dashboard .greeting-text { overflow-wrap: anywhere; }
-.screen-dashboard .header-right { gap: 4px; flex-shrink: 0; }
-.screen-dashboard .profile-avatar { min-width: 44px; min-height: 44px; justify-content: center; }
+.screen-dashboard .header-content { gap: 8px; align-items: center; }
+.screen-dashboard .header-left { min-width: 0; flex: 1; align-items: center; }
+.screen-dashboard .profile-section { min-width: 0; width: 100%; gap: 8px; align-items: center; }
+.screen-dashboard .home-section { min-width: 0; flex: 1; }
+.screen-dashboard .greeting-text { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.screen-dashboard .header-right { gap: 0; flex-shrink: 0; }
+.screen-dashboard .profile-avatar, .screen-dashboard .header-icon-btn { width: 44px; height: 44px; min-width: 44px; min-height: 44px; padding: 0; justify-content: center; flex-shrink: 0; }
+.screen-dashboard .notification-btn.has-recent { animation: none; }
+.screen-dashboard .notification-dot { top: 5px; right: 7px; width: 5px; height: 5px; }
 .screen-dashboard .home-label { font-size: 25px; line-height: 1.25; }
-.screen-dashboard .quick-actions { border-radius: 16px; padding: 20px 8px; }
+.screen-dashboard .quick-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; border-radius: 16px; padding: 16px 12px; }
+.screen-dashboard .quick-action-item { display: grid; grid-template-rows: 48px 32px; justify-items: center; align-items: start; gap: 8px; min-width: 0; }
+.screen-dashboard .quick-action-icon { width: 48px; height: 48px; border-radius: 12px; }
+.screen-dashboard .quick-action-label { max-width: none; font-size: 12px; line-height: 16px; }
 .screen-dashboard .trading-portfolio { margin: 16px 0; padding: 20px; }
 .screen-dashboard .favorites-section { margin: 0; padding: 20px; }
 .screen-dashboard .portfolio-title { font-size: 15px; }
-.screen-dashboard .portfolio-main { gap: 8px; margin-bottom: 8px; }
+.screen-dashboard .portfolio-main { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px; margin-bottom: 8px; }
+.screen-dashboard .portfolio-currency-selector { grid-column: 1 / -1; }
+.screen-dashboard .portfolio-demo-note { margin: 0 0 12px; font-size: 11px; color: #737373; }
 .screen-dashboard .portfolio-chart { margin: 8px 0; }
 .screen-dashboard .portfolio-amount { font-size: clamp(22px, 6vw, 30px); overflow-wrap: anywhere; }
 .screen-dashboard .custody-row { gap: 12px; flex-wrap: wrap; }
 .screen-dashboard .custody-row span:last-child { margin-left: auto; overflow-wrap: anywhere; }
 .screen-dashboard .favorite-amount { font-size: clamp(18px, 5vw, 24px); overflow-wrap: anywhere; }
 .screen-dashboard .favorite-left, .screen-dashboard .favorite-left > div { min-width: 0; }
+.screen-dashboard .favorite-left { align-items: center; gap: 12px; }
+.screen-dashboard .favorite-icon { display: grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; margin: 0; }
+.screen-dashboard .favorite-divider { margin-left: 40px; }
 .screen-dashboard .dashboard-error { background: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
 .screen-dashboard .dashboard-error p { margin-bottom: 12px; }
 .screen-dashboard .loading-container { min-height: 60vh; }
@@ -99,6 +112,11 @@ img { max-width: 100%; }
   z-index: 3000;
   padding: calc(16px + var(--app-safe-top)) calc(16px + var(--app-safe-right)) calc(16px + var(--app-safe-bottom)) calc(16px + var(--app-safe-left));
 }
+.screen-addoperation .funds-shortcut { margin-top: 12px; min-height: 44px; padding: 10px 14px; border: 1px solid #c90022; border-radius: 10px; background: #fff; color: #c90022; cursor: pointer; }
+.screen-addoperation .form-group > label { display: flex; align-items: center; gap: 8px; line-height: 1.4; }
+.screen-addoperation .form-group > label > svg { width: 20px; height: 20px; flex: 0 0 20px; stroke-width: 2; }
+.screen-addoperation .transfer-option-header { display: flex; align-items: center; gap: 10px; }
+.screen-addoperation .transfer-option-header > svg { width: 20px; height: 20px; flex: 0 0 20px; stroke-width: 2; }
 .screen-addoperation .confirmation-modal,
 .screen-loadbalance .modal-content, .screen-profile .modal-content {
   max-height: calc(100dvh - 32px - var(--app-safe-top) - var(--app-safe-bottom));
@@ -128,7 +146,7 @@ img { max-width: 100%; }
 @media (max-width: 360px) {
   .screen-dashboard .home-label { font-size: 22px; }
   .screen-dashboard .profile-section { gap: 4px; }
-  .screen-dashboard .header-icon-btn { width: 36px; }
+  .screen-dashboard .portfolio-main { grid-template-columns: minmax(0, 1fr); }
   .screen-auth .auth-card { padding: 24px 16px; }
 }
 @media (prefers-reduced-motion: reduce) {

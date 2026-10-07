@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { formatAmount } from '../services/money'
 import { useNavigate } from 'react-router-dom'
 import { FiArrowLeft, FiUser, FiCalendar, FiDollarSign, FiCreditCard, FiFileText } from 'react-icons/fi'
 import './OperationDetails.css'
@@ -26,14 +27,6 @@ function OperationDetails() {
     setLoading(false)
   }, [navigate])
 
-  const formatAmount = (amount) => {
-    if (amount === undefined || amount === null) return '0,00'
-    const absoluteAmount = Math.abs(amount)
-    const fixed = absoluteAmount.toFixed(2)
-    const [intPart, decPart] = fixed.split('.')
-    const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, "'")
-    return `${amount < 0 ? '-' : ''}${formattedInt},${decPart}`
-  }
 
   const formatDate = (dateString) => {
     const date = new Date(dateString)
@@ -121,7 +114,7 @@ function OperationDetails() {
           
           <div className="amount-info">
             <div className={`amount-value ${isIncoming ? 'positive' : 'negative'}`}>
-              CHF {isIncoming ? '+' : ''}{formatAmount(operation.amount)}
+              {operation.currency || 'CHF'} {isIncoming && operation.amount > 0 ? '+' : ''}{formatAmount(operation.amount)}
             </div>
             <div className="amount-type">
               {isIncoming ? 'Crédit' : 'Débit'}

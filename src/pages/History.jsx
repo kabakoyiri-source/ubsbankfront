@@ -1,6 +1,7 @@
 // History.jsx – Version finale 100% conforme capture (filtres fonctionnels + dates dynamiques + animation + responsive)
 
 import React, { useEffect, useMemo, useState } from 'react'
+import { formatAmount } from '../services/money'
 import { useNavigate } from 'react-router-dom'
 import './History.css'
 import api from '../services/api'
@@ -35,7 +36,7 @@ const History = () => {
     try {
       setLoading(true)
       setError('')
-      const res = await api.get('/operations?admin=true')
+      const res = await api.get('/operations')
       if (res.data?.success) {
         const operationsData = res.data.data || []
         console.log('Raw operations from API:', operationsData)
@@ -98,14 +99,6 @@ const History = () => {
     return groups
   }, [filteredOperations])
 
-  const formatAmount = (amount) => {
-    if (amount === undefined || amount === null) return '0,00'
-    const absoluteAmount = Math.abs(amount)
-    const fixed = absoluteAmount.toFixed(2)
-    const [intPart, decPart] = fixed.split('.')
-    const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, "'")
-    return `${amount < 0 ? '-' : ''}${formattedInt},${decPart}`
-  }
   const formatDate = (d) => new Date(d).toLocaleDateString('en-GB')
 
   const handleOperationClick = (operation) => {
@@ -115,8 +108,9 @@ const History = () => {
   }
 
   const handleDeleteOperation = async (operationId) => {
+    setError('')
     try {
-      const response = await api.delete(`/operations/${operationId}?admin=true`)
+      const response = await api.delete(`/operations/${operationId}`)
       if (response.data.success) {
         // Supprimer l'opération de la liste locale
         setOperations(prev => prev.filter(op => op._id !== operationId))
@@ -124,6 +118,7 @@ const History = () => {
       }
     } catch (error) {
       console.error('Erreur lors de la suppression:', error)
+      setError(error.response?.data?.message || 'Impossible de supprimer cette opération.')
       setSwipedOperationId(null)
     }
   }
@@ -240,7 +235,7 @@ const History = () => {
                   </div>
                   <div className="tx-amount">
                     <span>
-                      CHF {op.type === 'deposit' ? '+' : op.type === 'transfer' ? '' : ''}{formatAmount(op.amount)}
+                      {op.currency || 'CHF'} {op.amount > 0 ? '+' : ''}{formatAmount(op.amount)}
                     </span>
                   </div>
                 </div>

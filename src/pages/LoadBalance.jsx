@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FiArrowLeft, FiFileText, FiSave, FiX } from 'react-icons/fi'
 import api from '../services/api'
+import AmountInput from '../components/AmountInput'
+import { formatAmount } from '../services/money'
 import { useAuth } from '../contexts/AuthContext'
 import './LoadBalance.css'
 
@@ -317,15 +319,12 @@ function LoadBalance() {
             <label htmlFor="amount">
               Montant <span className="required">*</span>
             </label>
-            <input
-              type="number"
+            <AmountInput
               id="amount"
               name="amount"
               value={formData.amount}
-              onChange={handleChange}
-              placeholder="0.00"
-              step="0.01"
-              min="0"
+              onValueChange={amount => { setFormData(previous => ({ ...previous, amount })); setError('') }}
+              placeholder="0,00"
               required
             />
           </div>
@@ -480,7 +479,7 @@ function LoadBalance() {
           <div className="modal-content security-modal">
             <div className="modal-header">
               <h3>Vérification Sécurité</h3>
-              <p>Veuillez entrer le code de confirmation reçu par SMS pour valider la transaction de <strong>{formData.currency} {formData.amount}</strong>.</p>
+              <p>Veuillez entrer le code de confirmation reçu par SMS pour valider la transaction de <strong>{formData.currency} {formatAmount(Number(formData.amount))}</strong>.</p>
             </div>
             
             <form onSubmit={handleVerifyCode}>

@@ -96,13 +96,6 @@ function Operations() {
 
   const activeFiltersCount = Object.values(filters).filter(v => v !== '').length
 
-  // Fonction pour formater les montants avec point pour décimales et apostrophe pour milliers
-  const formatAmount = (amount) => {
-    if (typeof amount !== 'number') return '0.00'
-    return amount
-      .toFixed(2)
-      .replace(/\B(?=(\d{3})+(?!\d))/g, "'")
-  }
 
   // Fonction pour obtenir les 3 derniers chiffres du compte avec étoiles
   const formatAccountNumber = (accountNumber) => {

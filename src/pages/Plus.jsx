@@ -25,6 +25,7 @@ function Plus() {
       icon: FiSettings,
       label: 'Paramètres',
       description: 'Configurer l\'application',
+      action: () => navigate('/settings')
     },
     {
       icon: FiBell,

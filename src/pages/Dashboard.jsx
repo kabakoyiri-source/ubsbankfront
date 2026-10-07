@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import { calculateBalances } from '../services/balances'
+import { formatAmount } from '../services/money'
+import ScanIcon from '../components/ScanIcon'
 import { useAuth } from '../contexts/AuthContext'
 import { 
   FiUser, 
@@ -22,7 +25,6 @@ import {
   FiX,
   FiLogOut
 } from 'react-icons/fi'
-import { BiQrScan, BiMessage } from 'react-icons/bi'
 // Composants pour les icônes de cartes depuis Icons8
 const VisaIcon = ({ size = 32, className = '' }) => (
   <img 
@@ -47,6 +49,13 @@ const MastercardIcon = ({ size = 32, className = '' }) => (
 )
 import './Dashboard.css'
 
+// Illustrative portfolio curves, independent of the actual account balance.
+const tradingPreview = {
+  chf: { percent: 2.04, gain: 1043, points: '0,90 40,95 80,65 120,70 160,45 200,60 240,55 280,45 320,35' },
+  eur: { percent: 1.37, gain: 682, points: '0,92 40,80 80,88 120,62 160,70 200,50 240,58 280,42 320,38' },
+  usd: { percent: .86, gain: 435, points: '0,88 40,96 80,84 120,90 160,66 200,74 240,57 280,62 320,48' },
+}
+
 function Dashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -61,6 +70,7 @@ function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const menuRef = useRef(null)
   const [selectedCurrency, setSelectedCurrency] = useState('chf')
+  const preview = tradingPreview[selectedCurrency]
 
   useEffect(() => {
     loadData()
@@ -95,7 +105,7 @@ function Dashboard() {
     try {
       const [clientsRes, operationsRes] = await Promise.all([
         api.get('/clients'),
-        api.get('/operations?admin=true')
+        api.get('/operations')
       ])
 
       setClients(clientsRes.data.data || [])
@@ -103,17 +113,7 @@ function Dashboard() {
       const allOperations = operationsRes.data.data || []
       
       // Calculer le solde dynamique par devise (somme algébrique simple)
-      let balance = { chf: 0, eur: 0, usd: 0 }
-      allOperations.forEach(op => {
-        const currency = (op.currency || 'chf').toLowerCase()
-        if (op.status === 'completed') {
-          if (currency in balance) balance[currency] += Number(op.amount || 0)
-        } else if (op.status === 'pending') {
-          // Pour les opérations pending, on soustrait toujours la valeur absolue
-          if (currency in balance) balance[currency] -= Math.abs(Number(op.amount || 0))
-        }
-      })
-      setAdminBalance(balance)
+      setAdminBalance(calculateBalances(allOperations))
       
       // Charger les 10 dernières opérations pour l'affichage
       const recentOperations = allOperations.slice(0, 10)
@@ -144,15 +144,6 @@ function Dashboard() {
   const recentOperation = operations.length > 0 ? operations[0] : null
   const hasRecentAction = recentOperation && new Date(recentOperation.createdAt) > new Date(Date.now() - 24 * 60 * 60 * 1000) // Dernières 24h
 
-  // Fonction pour formater les montants avec point pour décimales et apostrophe pour milliers
-  const formatAmount = (amount) => {
-    if (amount === undefined || amount === null) return '0,00'
-    const absoluteAmount = Math.abs(amount)
-    const fixed = absoluteAmount.toFixed(2)
-    const [intPart, decPart] = fixed.split('.')
-    const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, "'")
-    return `${amount < 0 ? '-' : ''}${formattedInt},${decPart}`
-  }
 
   // Fonction de déconnexion
   const handleLogout = () => {
@@ -229,7 +220,7 @@ function Dashboard() {
               aria-label="Consulter les notifications"
               onClick={handleNotificationClick}
             >
-              <BiMessage size={24} />
+              <FiMessageSquare size={24} />
               {hasRecentAction && (
                 <span className="notification-dot"></span>
               )}
@@ -242,9 +233,9 @@ function Dashboard() {
       <div className="quick-actions">
         <Link to="/" className="quick-action-item">
           <div className="quick-action-icon scan-icon">
-            <BiQrScan size={24} />
+            <ScanIcon size={24} />
           </div>
-          <span className="quick-action-label">Scanner & Payer</span>
+          <span className="quick-action-label">Scanner &amp;<br />Payer</span>
         </Link>
         <Link to="/balance/load" className="quick-action-item">
           <div className="quick-action-icon load-icon">
@@ -271,14 +262,17 @@ function Dashboard() {
           <div className="portfolio-currency-selector">
             <button 
               className={`currency-tab ${selectedCurrency === 'chf' ? 'active' : ''}`}
+              aria-pressed={selectedCurrency === 'chf'}
               onClick={() => setSelectedCurrency('chf')}
             >CHF</button>
             <button 
               className={`currency-tab ${selectedCurrency === 'eur' ? 'active' : ''}`}
+              aria-pressed={selectedCurrency === 'eur'}
               onClick={() => setSelectedCurrency('eur')}
             >EUR</button>
             <button 
               className={`currency-tab ${selectedCurrency === 'usd' ? 'active' : ''}`}
+              aria-pressed={selectedCurrency === 'usd'}
               onClick={() => setSelectedCurrency('usd')}
             >USD</button>
           </div>
@@ -286,13 +280,13 @@ function Dashboard() {
             {selectedCurrency.toUpperCase()} {formatAmount(adminBalance[selectedCurrency])}
           </span>
           <div className="portfolio-gain">
-            <span className="gain-percent">+2.04%</span>
-            <span className="gain-amount">CHF 1'043</span>
+            <span className="gain-percent">+{formatAmount(preview.percent)}%</span>
+            <span className="gain-amount">{selectedCurrency.toUpperCase()} {formatAmount(preview.gain)}</span>
           </div>
         </div>
 
         <div className="portfolio-chart">
-          <svg viewBox="0 0 320 140" className="portfolio-svg">
+          <svg viewBox="0 0 320 140" className="portfolio-svg" role="img" aria-label={`Courbe de démonstration ${selectedCurrency.toUpperCase()}`}>
             {/* Ligne 0% */}
             <line
               x1="0"
@@ -317,7 +311,7 @@ function Dashboard() {
 
             {/* Courbe */}
             <polyline
-              points="0,90 40,95 80,65 120,70 160,45 200,60 240,55 280,45 320,35"
+              points={preview.points}
               fill="none"
               stroke="#5AA9E6"
               strokeWidth="2.5"
@@ -327,7 +321,7 @@ function Dashboard() {
 
             {/* Zone bleue */}
             <polygon
-              points="0,90 40,95 80,65 120,70 160,45 200,60 240,55 280,45 320,35 320,120 0,120"
+              points={preview.points + ' 320,120 0,120'}
               fill="url(#blueGradient)"
             />
 
@@ -339,6 +333,7 @@ function Dashboard() {
             </defs>
           </svg>
         </div>
+        <p className="portfolio-demo-note">Courbe de démonstration</p>
 
         <div className="portfolio-footer">
           
@@ -356,7 +351,7 @@ function Dashboard() {
 
         <div className="favorite-item">
           <div className="favorite-left">
-            <span className="favorite-icon">⛃</span>
+            <span className="favorite-icon"><FiLayers size={24} aria-hidden="true" /></span>
             <div>
               <div className="favorite-label">Compte CHF</div>
               <div className="favorite-amount">CHF {formatAmount(adminBalance.chf)}</div>
@@ -370,7 +365,7 @@ function Dashboard() {
         <div className="favorite-item">
           <div className="favorite-left">
             <span className="favorite-icon savings-icon">
-              <FiLayers size={18} />
+              <FiLayers size={24} aria-hidden="true" />
             </span>
 
             <div>

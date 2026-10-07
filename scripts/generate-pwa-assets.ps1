@@ -19,6 +19,17 @@ for ($y = 0; $y -lt $source.Height; $y++) {
 }
 $sourceRect = [System.Drawing.Rectangle]::new($left, $top, $right - $left + 1, $bottom - $top + 1)
 $ratio = $sourceRect.Height / $sourceRect.Width
+$maxInkRadius = 0.0
+for ($y = $top; $y -le $bottom; $y++) {
+  for ($x = $left; $x -le $right; $x++) {
+    $pixel = $source.GetPixel($x, $y)
+    if ($pixel.A -gt 20 -and ($pixel.R -lt 245 -or $pixel.G -lt 245 -or $pixel.B -lt 245)) {
+      $dx = ($x - $left + 0.5) / $sourceRect.Width - 0.5
+      $dy = ($y - $top + 0.5 - $sourceRect.Height / 2) / $sourceRect.Width
+      $maxInkRadius = [Math]::Max($maxInkRadius, [Math]::Sqrt($dx * $dx + $dy * $dy))
+    }
+  }
+}
 function Write-BrandImage([string]$name, [int]$width, [int]$height, [int]$logoWidth) {
   $bitmap = [System.Drawing.Bitmap]::new($width, $height, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
   $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
@@ -33,13 +44,16 @@ function Write-BrandImage([string]$name, [int]$width, [int]$height, [int]$logoWi
   } finally { $graphics.Dispose(); $bitmap.Dispose() }
 }
 
-# A centered 72% wordmark fits entirely inside the maskable 40%-radius safe circle.
-Write-BrandImage 'icon-192-v3.png' 192 192 138
-Write-BrandImage 'icon-512-v3.png' 512 512 369
-Write-BrandImage 'icon-maskable-192-v3.png' 192 192 138
-Write-BrandImage 'icon-maskable-512-v3.png' 512 512 369
-Write-BrandImage 'apple-touch-icon-v3.png' 180 180 130
-Write-BrandImage 'favicon-v3.png' 32 32 28
+# Standard/iOS icons use an 86% wordmark. Adaptive icons use the largest
+# width that keeps the actual ink inside the 40%-radius safe circle.
+Write-BrandImage 'icon-192-v4.png' 192 192 165
+Write-BrandImage 'icon-512-v4.png' 512 512 440
+foreach ($size in @(192, 512)) {
+  $safeWidth = [int][Math]::Floor(($size * 0.4 - 2) / $maxInkRadius)
+  Write-BrandImage "icon-maskable-$size-v4.png" $size $size ([Math]::Min([int]($size * 0.86), $safeWidth))
+}
+Write-BrandImage 'apple-touch-icon-v4.png' 180 180 155
+Write-BrandImage 'favicon-v4.png' 32 32 28
 Write-BrandImage 'logo-wordmark.png' 1060 ([int][Math]::Round(1060 * $ratio)) 1060
 
 # iOS launch images must match screen dimensions and orientation exactly.

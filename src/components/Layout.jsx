@@ -8,7 +8,7 @@ const screens = {
   '/operations': 'operations', '/operations/new': 'addoperation',
   '/operations/transfer': 'addoperation', '/balance/load': 'loadbalance',
   '/history': 'history', '/accounts': 'accounts', '/operation-details': 'operationdetails',
-  '/cards': 'cards', '/more': 'plus', '/profile': 'profile', '/about': 'about',
+  '/cards': 'cards', '/more': 'plus', '/profile': 'profile', '/about': 'about', '/settings': 'settings',
 }
 const navItems = [
   { path: '/', label: 'Accueil', icon: FiHome, section: 'home' },

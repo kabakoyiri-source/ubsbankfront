@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { formatAmount } from '../services/money'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { 
   FiArrowLeft, 
@@ -224,7 +225,7 @@ function ClientDetail() {
               Solde
             </label>
             <span className="balance-amount">
-              {client.balance.toFixed(2)} CHF
+              {formatAmount(client.balance)} {client.currency || 'CHF'}
             </span>
           </div>
           <div className="info-item">
@@ -276,7 +277,7 @@ function ClientDetail() {
                   </div>
                   <div className="operation-details">
                     <span className="operation-amount">
-                      {op.type === 'deposit' ? '+' : '-'}{op.amount.toFixed(2)} CHF
+                      {op.amount > 0 ? '+' : ''}{formatAmount(op.amount)} {op.currency || 'CHF'}
                     </span>
                     <span className="operation-date">
                       {new Date(op.createdAt).toLocaleDateString('fr-FR', {

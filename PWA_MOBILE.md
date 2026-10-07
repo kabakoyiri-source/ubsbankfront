@@ -1,10 +1,12 @@
 # Corrections de la PWA mobile
 
-L’icône utilise le logo existant, centré sur un carré blanc opaque. La largeur du logo est réduite à 72 % du carré, pour se rapprocher de l’icône de droite sur la référence. Les variantes Android standard et adaptatives font réellement 192 × 192 et 512 × 512 px ; l’icône iOS fait 180 × 180 px. Le système du téléphone applique lui-même les coins arrondis.
+L’icône utilise le logo existant, centré sur un carré blanc opaque. Les nouvelles icônes `v4` portent sa largeur à 86 % du carré sur iOS et Android standard, soit environ 20 % de plus que la version précédente. Les variantes Android adaptatives utilisent la plus grande largeur qui garde tous les traits du logo dans la zone de sécurité circulaire, sans couper les clés. Les variantes Android font réellement 192 × 192 et 512 × 512 px ; l’icône iOS fait 180 × 180 px. Le système du téléphone applique lui-même les coins arrondis. Les fichiers `v3` sont conservés pour les anciennes pages encore actives.
 
 Le démarrage Android utilise le manifeste blanc et les nouvelles icônes. Pour iOS, 38 images de lancement couvrent 19 combinaisons de taille/densité, en portrait et paysage. L’écran de chargement HTML puis React garde le même logo sur fond blanc. Les tailles iOS non couvertes restent à vérifier sur appareil.
 
-La navigation principale est commune à toutes les pages : Accueil, Paiements, Comptes, Cartes et Plus. Elle tient compte de la zone gestuelle. Les styles des pages sont isolés ; les cartes et formulaires s’adaptent aux petits écrans et les fenêtres de confirmation passent au-dessus de la navigation. Les champs mobiles gardent une taille de texte de 16 px, et le zoom utilisateur reste disponible.
+La navigation principale est commune à toutes les pages : Accueil, Paiements, Comptes, Cartes et Plus. Sa hauteur hors marge système est de 50 px, contre 64 px auparavant. Les cibles tactiles gardent au moins 44 px et la zone gestuelle native reste réservée. Les trois actions de l’accueil ont des colonnes égales ; les contrôles de l’en-tête et les icônes du formulaire sont alignés. Les icônes CHF et EUR des favoris utilisent le même dessin et la même taille. Les styles des pages sont isolés ; les cartes et formulaires s’adaptent aux petits écrans et les fenêtres de confirmation passent au-dessus de la navigation. Les champs mobiles gardent une taille de texte de 16 px, et le zoom utilisateur reste disponible.
+
+Les montants utilisent un format commun : `1'234'567,89`, avec des apostrophes pour les milliers et une virgule pour les centimes. Les champs de montant groupent aussi les chiffres pendant la saisie et transmettent au serveur leur valeur numérique sans séparateurs. Les champs acceptent une virgule ou un point pour les décimales et des montants copiés avec apostrophes ou espaces. La sélection CHF/EUR/USD modifie simultanément la devise du gain, son pourcentage et la courbe de démonstration ; ces aperçus illustratifs ne proviennent pas d’un cours de marché en direct.
 
 Les échecs réseau affichent un message avec une action pour réessayer. Une panne réseau ne supprime plus la session enregistrée. La déconnexion efface aussi l’opération sélectionnée. Les rubriques du menu Plus sans fonctionnalité sont indiquées comme indisponibles.
 
@@ -39,7 +41,7 @@ Le contrôle utilise Chrome installé localement. Les captures et le rapport son
 Pour régénérer les icônes et les images iOS sous Windows :
 
 ```text
-powershell -NoProfile -File scripts/generate-pwa-assets.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate-pwa-assets.ps1
 npm run build
 ```
 

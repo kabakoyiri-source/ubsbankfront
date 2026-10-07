@@ -17,6 +17,7 @@ import Cards from './pages/Cards'
 import Plus from './pages/Plus'
 import Profile from './pages/Profile'
 import About from './pages/About'
+import Settings from './pages/Settings'
 import Layout from './components/Layout'
 import StartupScreen from './components/StartupScreen'
 import PwaStatus from './components/PwaStatus'
@@ -37,6 +38,7 @@ function AppRoutes() {
   )
   return (
     <Routes>
+      <Route path="/settings" element={<PrivateRoute><Layout><Settings /></Layout></PrivateRoute>} />
       <Route path="/login" element={<div className="screen-auth"><Login /></div>} />
       <Route path="/register" element={<div className="screen-auth"><Register /></div>} />
       <Route

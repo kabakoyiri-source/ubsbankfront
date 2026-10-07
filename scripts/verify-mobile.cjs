@@ -102,7 +102,7 @@ async function main() {
     }, { user, operations });
     const page = await context.newPage();
     page.on('pageerror', error => errors.push(error.message));
-    const routes = ['/', '/accounts', '/cards', '/more', '/profile', '/about', '/clients', '/clients/new', '/clients/test-client', '/operations', '/operations/new', '/operations/transfer', '/balance/load', '/history', '/operation-details'];
+    const routes = ['/', '/accounts', '/cards', '/more', '/settings', '/profile', '/about', '/clients', '/clients/new', '/clients/test-client', '/operations', '/operations/new', '/operations/transfer', '/balance/load', '/history', '/operation-details'];
     for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 844 }, { width: 430, height: 932 }, { width: 844, height: 390 }, { width: 768, height: 1024 }, { width: 1280, height: 800 }]) {
       await page.setViewportSize(viewport);
       for (const route of routes) {
@@ -134,6 +134,35 @@ async function main() {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(base);
     await page.locator('.favorites-section').waitFor();
+    const alignment = await page.evaluate(() => {
+      const rectangles = selector => [...document.querySelectorAll(selector)].map(element => element.getBoundingClientRect().toJSON());
+      return {
+        quick: rectangles('.quick-action-icon'), labels: rectangles('.quick-action-label'),
+        header: rectangles('.profile-avatar, .header-icon-btn'),
+        favorites: rectangles('.favorite-icon svg'), nav: document.querySelector('.app-bottom-nav').getBoundingClientRect().height,
+      };
+    });
+    assert(alignment.nav <= 52, 'Navigation is too tall without a system inset');
+    const centers = alignment.quick.map(rect => rect.x + rect.width / 2);
+    assert(Math.abs((centers[1] - centers[0]) - (centers[2] - centers[1])) <= 1, 'Quick actions must be evenly spaced');
+    assert(alignment.quick.every(rect => rect.width === 48 && rect.height === 48 && Math.abs(rect.top - alignment.quick[0].top) <= 1));
+    assert(alignment.labels.every(rect => Math.abs(rect.top - alignment.labels[0].top) <= 1));
+    const headerCenters = alignment.header.map(rect => rect.top + rect.height / 2);
+    assert(Math.max(...headerCenters) - Math.min(...headerCenters) <= 1, 'Header controls must share the same center line');
+    assert(alignment.favorites.every(rect => rect.width === 24 && rect.height === 24));
+    const curves = [];
+    const gains = [];
+    for (const currency of ['CHF', 'EUR', 'USD']) {
+      await page.getByRole('button', { name: currency, exact: true }).click();
+      assert((await page.locator('.gain-amount').innerText()).startsWith(currency + ' '));
+      assert((await page.locator('.portfolio-amount').innerText()).startsWith(currency + ' '));
+      assert.equal(await page.getByRole('button', { name: currency, exact: true }).getAttribute('aria-pressed'), 'true');
+      curves.push(await page.locator('.portfolio-svg polyline').getAttribute('points'));
+      gains.push(await page.locator('.gain-percent').innerText());
+    }
+    assert.equal(new Set(curves).size, 3, 'Each currency needs a distinct illustrative curve');
+    assert.equal(new Set(gains).size, 3);
+    await page.getByRole('button', { name: 'CHF', exact: true }).click();
     await page.addStyleTag({ content: ':root { --app-safe-top: 47px; --app-safe-bottom: 34px; --app-safe-left: 0px; --app-safe-right: 0px; }' });
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     const safe = await page.evaluate(() => ({
@@ -147,6 +176,20 @@ async function main() {
     assert(safe.last.bottom <= safe.nav.top, 'Last favorite obscured by bottom navigation');
     await page.screenshot({ path: path.join(qa, 'home-safe-area.png') });
     await page.goto(base + '/operations/new');
+    const labelIcons = await page.locator('.form-group > label > svg').evaluateAll(icons => icons.map(icon => icon.getBoundingClientRect().toJSON()));
+    assert.equal(labelIcons.length, 5);
+    assert(labelIcons.every(icon => icon.width === 20 && icon.height === 20 && Math.abs(icon.x - labelIcons[0].x) <= 1));
+    const amountInput = page.locator('input[name="amount"]');
+    await amountInput.fill('583936926972');
+    assert.equal(await amountInput.inputValue(), "583'936'926'972");
+    await amountInput.fill("1'234'567,89");
+    assert.equal(await amountInput.inputValue(), "1'234'567,89");
+    await amountInput.fill('1234.56');
+    await amountInput.evaluate(input => input.setSelectionRange(3, 3));
+    await amountInput.pressSequentially('9');
+    assert.equal(await amountInput.inputValue(), "12'934,56");
+    await amountInput.press('Backspace');
+    assert.equal(await amountInput.inputValue(), "1'234,56");
     await page.setViewportSize({ width: 844, height: 390 });
     await page.locator('select[name="clientId"]').selectOption('test-client');
     await page.locator('input[name="amount"]').fill('123');

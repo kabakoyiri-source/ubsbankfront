@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import { formatAmount } from '../services/money'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import { calculateBalances } from '../services/balances'
 import { 
   FiArrowLeft,
   FiLayers,
@@ -64,19 +66,10 @@ function Accounts() {
     setLoading(true)
     setError('')
     try {
-      const response = await api.get('/operations?admin=true')
+      const response = await api.get('/operations')
       if (response.data.success) {
         const operations = response.data.data || []
-        let balance = { chf: 0, eur: 0, usd: 0 }
-        operations.forEach(op => {
-          const currency = (op.currency || 'chf').toLowerCase()
-          if (op.status === 'completed') {
-            balance[currency] += (op.amount || 0)
-          } else if (op.status === 'pending') {
-            balance[currency] -= Math.abs(op.amount || 0)
-          }
-        })
-        setAdminBalance(balance)
+        setAdminBalance(calculateBalances(operations))
       }
     } catch (error) {
       console.error('Erreur lors du chargement du solde:', error)
@@ -93,14 +86,6 @@ function Accounts() {
     }))
   }
 
-  const formatAmount = (amount) => {
-    if (amount === undefined || amount === null) return '0,00'
-    const absoluteAmount = Math.abs(amount)
-    const fixed = absoluteAmount.toFixed(2)
-    const [intPart, decPart] = fixed.split('.')
-    const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, "'")
-    return `${amount < 0 ? '-' : ''}${formattedInt},${decPart}`
-  }
 
   if (loading) {
     return (
