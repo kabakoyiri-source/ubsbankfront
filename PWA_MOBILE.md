@@ -8,6 +8,10 @@ La navigation principale est commune à toutes les pages : Accueil, Paiements, C
 
 Les échecs réseau affichent un message avec une action pour réessayer. Une panne réseau ne supprime plus la session enregistrée. La déconnexion efface aussi l’opération sélectionnée. Les rubriques du menu Plus sans fonctionnalité sont indiquées comme indisponibles.
 
+La connexion propose « Mémoriser mes identifiants sur cet appareil », activé par défaut pour ce projet personnel. Après une connexion réussie, l’email et le mot de passe sont restaurés au retour sur le formulaire, y compris après déconnexion ou expiration de la session. Le mot de passe reste masqué à l’écran et est stocké chiffré avec AES-GCM dans IndexedDB, avec une clé non exportable. Ce stockage appartient au navigateur et au site : effacer ses données supprime aussi les identifiants. Le bouton « Oublier mes identifiants » efface le mot de passe enregistré et la clé. La déconnexion conserve volontairement les identifiants mémorisés.
+
+Cette option est réservée à un appareil personnel : une personne ayant accès à la PWA peut se reconnecter en appuyant sur le bouton. Le chiffrement local ne protège pas contre un script malveillant exécuté par le même site. Aucun identifiant n’est mémorisé si la connexion échoue. Si le navigateur ne permet pas le stockage, la connexion manuelle reste disponible. Référence de stockage des clés : [Web Cryptography, W3C](https://www.w3.org/TR/WebCryptoAPI/#concepts-key-storage).
+
 Le cache inclut les fichiers JavaScript et CSS produits par la compilation. Les requêtes API ne sont pas mises en cache. Une mise à jour attend l’action « Actualiser », sans interrompre automatiquement un formulaire ; cette action recharge la page et efface donc les saisies non enregistrées.
 
 ## Vérification

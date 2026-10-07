@@ -32,10 +32,14 @@ async function mockApi(context, state = {}) {
     if (state.offline) return route.abort('internetdisconnected');
     if (state.failData && !url.pathname.startsWith('/api/auth')) return route.fulfill({ status: 503, json: { message: 'Indisponible' } });
     if (url.pathname === '/api/auth/me') {
+      if (state.expired) return route.fulfill({ status: 401, json: { success: false } });
       if (state.delayAuth) await new Promise(resolve => setTimeout(resolve, 500));
       return route.fulfill({ json: { success: true, user } });
     }
-    if (url.pathname === '/api/auth/login') return route.fulfill({ status: 401, json: { success: false, message: 'Identifiants incorrects' } });
+    if (url.pathname === '/api/auth/login') {
+      if (state.acceptLogin) return route.fulfill({ json: { success: true, token: 'test-token', user } });
+      return route.fulfill({ status: 401, json: { success: false, message: 'Identifiants incorrects' } });
+    }
     const data = url.pathname === '/api/clients/test-client' ? client : url.pathname.startsWith('/api/clients') ? [client] : operations;
     return route.fulfill({ json: { success: true, data } });
   });
@@ -169,6 +173,104 @@ async function main() {
     await page.screenshot({ path: path.join(qa, 'login-mobile.png'), fullPage: true });
     await context.close();
 
+    // Credentials are restored after logout, reopening and session expiration.
+    const memoryState = {};
+    const memoryContext = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
+    await mockApi(memoryContext, memoryState);
+    let memoryPage = await memoryContext.newPage();
+    memoryPage.on('pageerror', error => errors.push(error.message));
+    const submitLogin = async (email, password) => {
+      await memoryPage.getByLabel('Email', { exact: true }).fill(email);
+      await memoryPage.getByLabel('Mot de passe', { exact: true }).fill(password);
+      await memoryPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+    };
+    const logout = async () => {
+      await memoryPage.getByRole('button', { name: 'Ouvrir le menu' }).first().click();
+      await memoryPage.getByRole('button', { name: 'Déconnexion', exact: true }).click();
+      await memoryPage.getByRole('button', { name: 'Se connecter', exact: true }).waitFor();
+      await memoryPage.waitForFunction(() => !document.querySelector('#login-email').disabled);
+    };
+    const inspectRemembered = () => memoryPage.evaluate(() => new Promise((resolve, reject) => {
+      const request = indexedDB.open('ubs-device-login', 1);
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result;
+        const read = db.transaction('preferences').objectStore('preferences').get('login');
+        read.onsuccess = () => {
+          const entry = read.result;
+          db.close();
+          resolve(entry ? { enabled: entry.enabled, email: entry.email, extractable: entry.key?.extractable, encrypted: entry.password instanceof ArrayBuffer, decodedBytes: entry.password ? new TextDecoder().decode(entry.password) : null, keys: Object.keys(entry) } : null);
+        };
+      };
+    }));
+    await memoryPage.goto(base + '/login');
+    await submitLogin('wrong@example.test', 'wrong-test-password');
+    await memoryPage.getByText('Identifiants incorrects').waitFor();
+    assert.equal(await inspectRemembered(), null, 'Failed login must not save credentials');
+    memoryState.acceptLogin = true;
+    await submitLogin('remember@example.test', 'test-password-123');
+    await memoryPage.locator('.favorites-section').waitFor();
+    const stored = await inspectRemembered();
+    assert.equal(stored.encrypted, true);
+    assert.equal(stored.extractable, false);
+    assert.notEqual(stored.decodedBytes, 'test-password-123');
+    assert.equal(await memoryPage.evaluate(() => JSON.stringify({ ...localStorage }).includes('test-password-123')), false);
+    await logout();
+    assert.equal(await memoryPage.getByLabel('Email', { exact: true }).inputValue(), 'remember@example.test');
+    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-123');
+    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).getAttribute('type'), 'password');
+    await memoryPage.close();
+    memoryPage = await memoryContext.newPage();
+    await memoryPage.goto(base + '/login');
+    await memoryPage.waitForFunction(() => !document.querySelector('#login-email').disabled);
+    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-123');
+    await memoryPage.screenshot({ path: path.join(qa, 'remembered-login-mobile.png'), fullPage: true, animations: 'disabled' });
+    await memoryPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+    await memoryPage.locator('.favorites-section').waitFor();
+    memoryState.expired = true;
+    await memoryPage.goto(base + '/accounts');
+    await memoryPage.waitForFunction(() => document.querySelector('#login-email') && !document.querySelector('#login-email').disabled);
+    assert.equal(await memoryPage.getByLabel('Email', { exact: true }).inputValue(), 'remember@example.test');
+    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-123');
+    memoryState.expired = false;
+    memoryState.acceptLogin = false;
+    await submitLogin('new@example.test', 'failed-replacement');
+    await memoryPage.getByText('Identifiants incorrects').waitFor();
+    await memoryPage.reload();
+    await memoryPage.waitForFunction(() => !document.querySelector('#login-email').disabled);
+    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-123');
+    memoryState.acceptLogin = true;
+    await submitLogin('new@example.test', 'new-test-password');
+    await memoryPage.locator('.favorites-section').waitFor();
+    await logout();
+    assert.equal(await memoryPage.getByLabel('Email', { exact: true }).inputValue(), 'new@example.test');
+    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'new-test-password');
+    await memoryPage.getByRole('button', { name: 'Oublier mes identifiants', exact: true }).click();
+    await memoryPage.waitForFunction(() => !document.querySelector('#login-email').disabled && document.querySelector('#login-email').value === '');
+    assert.deepEqual((await inspectRemembered()).keys, ['enabled']);
+    await memoryPage.reload();
+    await memoryPage.waitForFunction(() => !document.querySelector('#login-email').disabled);
+    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), '');
+    assert.equal(await memoryPage.getByLabel('Mémoriser mes identifiants sur cet appareil').isChecked(), false);
+    await submitLogin('unsaved@example.test', 'unsaved-test-password');
+    await memoryPage.locator('.favorites-section').waitFor();
+    await logout();
+    assert.equal(await memoryPage.getByLabel('Email', { exact: true }).inputValue(), '');
+    await memoryContext.close();
+
+    // Storage support is optional and must not prevent normal login.
+    const unavailableContext = await browser.newContext({ viewport: { width: 320, height: 568 }, serviceWorkers: 'block' });
+    await mockApi(unavailableContext, { acceptLogin: true });
+    await unavailableContext.addInitScript(() => Object.defineProperty(window, 'indexedDB', { value: undefined }));
+    const unavailablePage = await unavailableContext.newPage();
+    await unavailablePage.goto(base + '/login');
+    await unavailablePage.getByText('La mémorisation est indisponible dans ce navigateur. Vous pouvez vous connecter normalement.').waitFor();
+    await unavailablePage.getByLabel('Email', { exact: true }).fill('test@example.test');
+    await unavailablePage.getByLabel('Mot de passe', { exact: true }).fill('test-password');
+    await unavailablePage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+    await unavailablePage.locator('.favorites-section').waitFor();
+    await unavailableContext.close();
+
     // API failures have a visible retry state instead of false zero balances.
     const failureState = { failData: true, delayAuth: true };
     const failureContext = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
@@ -227,7 +329,7 @@ async function main() {
     assert.deepEqual(errors, [], 'Unexpected JavaScript errors');
     fs.writeFileSync(path.join(qa, 'verification.json'), JSON.stringify({ count, failures, errors, safe, cached }, null, 2));
     assert.deepEqual(failures, [], 'Horizontal overflow detected; see qa/verification.json');
-    console.log('PASS: ' + count + ' responsive pages; icons, splash assets, safe areas, authentication, retry and offline PWA.');
+    console.log('PASS: ' + count + ' responsive pages; icons, splash assets, safe areas, authentication, remembered credentials, retry and offline PWA.');
   } finally { await browser.close(); server.close(); }
 }
 main().catch(error => { console.error(error); server.close(); process.exitCode = 1; });

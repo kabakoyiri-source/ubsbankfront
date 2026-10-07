@@ -18,7 +18,7 @@ const navItems = [
   { path: '/more', label: 'Plus', icon: FiMoreHorizontal, section: 'more' },
 ]
 function Layout({ children }) {
-  const { pathname } = useLocation()
+  const { pathname, state } = useLocation()
   const screen = screens[pathname] || (pathname.startsWith('/clients/') ? 'clientdetail' : 'dashboard')
   const section = pathname === '/' ? 'home'
     : pathname.startsWith('/operations') || pathname === '/history' || pathname === '/balance/load' || pathname === '/operation-details' ? 'payments'
@@ -27,7 +27,10 @@ function Layout({ children }) {
   return (
     <div className={'layout ' + (screen === 'dashboard' ? 'dashboard-page' : '')}>
       <main className="main-content" id="main-content">
-        <div className={'content-wrapper screen-' + screen}>{children}</div>
+        <div className={'content-wrapper screen-' + screen}>
+          {state?.loginMemoryError && <div className="error-message" role="status">{state.loginMemoryError}</div>}
+          {children}
+        </div>
       </main>
       <nav className="app-bottom-nav" aria-label="Navigation principale">
         <div className="app-bottom-nav-inner">

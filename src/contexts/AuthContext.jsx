@@ -52,8 +52,8 @@ export function AuthProvider({ children }) {
         setIsAuthenticated(true)
         return { success: true }
       }
+      return { success: false, message: response.data.message || 'Connexion impossible. Réessayez.' }
     } catch (error) {
-      console.error('Login error:', error)
       let message = 'Erreur de connexion'
       
       if (error.response) {
