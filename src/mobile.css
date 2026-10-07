@@ -113,6 +113,11 @@ img { max-width: 100%; }
   padding: calc(16px + var(--app-safe-top)) calc(16px + var(--app-safe-right)) calc(16px + var(--app-safe-bottom)) calc(16px + var(--app-safe-left));
 }
 .screen-addoperation .funds-shortcut { margin-top: 12px; min-height: 44px; padding: 10px 14px; border: 1px solid #c90022; border-radius: 10px; background: #fff; color: #c90022; cursor: pointer; }
+.screen-addoperation .beneficiary-add { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.screen-addoperation .beneficiary-help p { margin: 8px 0 0; font-size: 14px; line-height: 1.5; }
+.screen-addoperation .beneficiary-help [role="alert"] { color: #a0001b; }
+.screen-addoperation .beneficiary-notice { padding: 14px 16px; border-radius: 12px; background: #edf8f1; color: #166534; line-height: 1.5; }
+.screen-addclient .form-section { display: flex; flex-direction: column; gap: 20px; }
 .screen-addoperation .form-group > label { display: flex; align-items: center; gap: 8px; line-height: 1.4; }
 .screen-addoperation .form-group > label > svg { width: 20px; height: 20px; flex: 0 0 20px; stroke-width: 2; }
 .screen-addoperation .transfer-option-header { display: flex; align-items: center; gap: 10px; }

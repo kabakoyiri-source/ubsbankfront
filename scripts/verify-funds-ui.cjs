@@ -4,13 +4,20 @@ const path = require('node:path');
 const { chromium, devices } = require('playwright');
 
 // Called by the backend verification, against its temporary MongoDB database.
-exports.verifyFundsUi = async function verifyFundsUi(base, token, clientId) {
+exports.verifyFundsUi = async function verifyFundsUi(base, token) {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     const context = await browser.newContext({ ...devices['Pixel 7'], serviceWorkers: 'block' });
     await context.addInitScript(token => localStorage.setItem('token', token), token);
+    let failList = true;
+    let failCreation = true;
     await context.route('**/api/**', async route => {
       const url = new URL(route.request().url());
+      if (url.pathname === '/api/clients' && ((route.request().method() === 'GET' && failList) || (route.request().method() === 'POST' && failCreation))) {
+        if (route.request().method() === 'GET') failList = false;
+        else failCreation = false;
+        return route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ success: false, message: 'Service temporairement indisponible. Réessayez.' }) });
+      }
       const response = await route.fetch({ url: base + url.pathname + url.search });
       await route.fulfill({ response, headers: { ...response.headers(), 'access-control-allow-origin': '*' } });
     });
@@ -36,7 +43,49 @@ exports.verifyFundsUi = async function verifyFundsUi(base, token, clientId) {
     fs.mkdirSync(qa, { recursive: true });
     await page.screenshot({ path: path.join(qa, 'settings-funds-mobile.png'), fullPage: true, animations: 'disabled' });
     await page.getByRole('link', { name: 'Effectuer un virement', exact: true }).click();
-    await page.getByLabel('Bénéficiaire', { exact: false }).selectOption(clientId);
+    await page.getByRole('alert').filter({ hasText: 'Impossible de charger les bénéficiaires' }).waitFor();
+    assert(await page.locator('#clientId').isDisabled());
+    await page.getByRole('button', { name: 'Réessayer', exact: true }).click();
+    await page.getByText('Ajoutez votre premier bénéficiaire pour effectuer un virement.', { exact: true }).waitFor();
+    assert(await page.getByRole('button', { name: 'Continuer', exact: true }).isDisabled());
+    await page.locator('input[name="amount"]').fill('25,25');
+    await page.locator('#adminAccountType').selectOption('eur');
+    await page.getByText('Virement en 2 jours ouvrables', { exact: true }).click();
+    await page.locator('#description').fill('Test du bénéficiaire mobile');
+    await page.getByRole('button', { name: 'Ajouter un bénéficiaire', exact: true }).click();
+    await page.getByRole('button', { name: 'Annuler', exact: true }).click();
+    await page.getByText('Ajoutez votre premier bénéficiaire pour effectuer un virement.', { exact: true }).waitFor();
+    assert.equal(await page.locator('input[name="amount"]').inputValue(), '25,25');
+    assert.equal(await page.locator('#adminAccountType').inputValue(), 'eur');
+    assert(await page.locator('input[value="delayed"]').isChecked());
+    await page.getByRole('button', { name: 'Ajouter un bénéficiaire', exact: true }).click();
+    const fillBeneficiary = async () => {
+      await page.locator('#firstName').fill('Mobile');
+      await page.locator('#lastName').fill('Beneficiary');
+      await page.locator('#bankName').fill('Test bank');
+      await page.locator('#accountNumber').fill('ch93 0076 2011 6238 5295 7');
+      await page.locator('#swiftCode').fill('ubs wchzh80a');
+      await page.locator('#bankAddress').fill('Test address');
+    };
+    await fillBeneficiary();
+    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+    await page.screenshot({ path: path.join(qa, 'add-beneficiary-mobile.png'), fullPage: true, animations: 'disabled' });
+    await page.getByRole('button', { name: 'Créer le bénéficiaire', exact: true }).click();
+    await page.getByRole('alert').filter({ hasText: 'Service temporairement indisponible' }).waitFor();
+    assert.equal(await page.locator('#accountNumber').inputValue(), 'ch93 0076 2011 6238 5295 7');
+    await page.getByRole('button', { name: 'Créer le bénéficiaire', exact: true }).click();
+    await page.waitForURL(url => url.pathname === '/operations/new' && url.searchParams.has('clientId'));
+    const clientId = new URL(page.url()).searchParams.get('clientId');
+    await page.waitForFunction(id => document.querySelector('#clientId')?.value === id && !document.querySelector('#clientId').disabled, clientId);
+    assert.equal(await page.locator('#clientId option:checked').innerText(), 'Mobile Beneficiary');
+    assert.equal(await page.locator('input[name="amount"]').inputValue(), '25,25');
+    assert.equal(await page.locator('#adminAccountType').inputValue(), 'eur');
+    assert(await page.locator('input[value="delayed"]').isChecked());
+    assert.equal(await page.locator('#description').inputValue(), 'Test du bénéficiaire mobile');
+    await page.getByRole('status').filter({ hasText: 'Bénéficiaire ajouté et sélectionné' }).waitFor();
+    await page.screenshot({ path: path.join(qa, 'beneficiary-selected-mobile.png'), fullPage: true, animations: 'disabled' });
+    await page.locator('#adminAccountType').selectOption('chf');
+    await page.getByText('Virement instantané', { exact: true }).click();
     await page.locator('input[name="amount"]').fill('200');
     await page.waitForFunction(() => !document.querySelector('button[type="submit"]').disabled);
     await page.getByRole('button', { name: 'Continuer', exact: true }).click();
@@ -46,6 +95,22 @@ exports.verifyFundsUi = async function verifyFundsUi(base, token, clientId) {
     await page.getByRole('button', { name: 'Continuer', exact: true }).click();
     await page.getByRole('button', { name: 'Confirmer le virement', exact: true }).click();
     await page.waitForURL('**/operations');
+    await page.goto(base + '/clients');
+    await page.getByText('Mobile Beneficiary', { exact: true }).waitFor();
+    await page.reload();
+    await page.getByText('Mobile Beneficiary', { exact: true }).waitFor();
+    assert.equal(await page.locator('.client-card').count(), 1);
+    await page.goto(base + '/clients/new');
+    await fillBeneficiary();
+    await page.getByRole('button', { name: 'Créer le bénéficiaire', exact: true }).click();
+    await page.getByRole('alert').filter({ hasText: 'Ce numéro de compte est déjà enregistré' }).waitFor();
+    assert.equal(await page.locator('#accountNumber').inputValue(), 'ch93 0076 2011 6238 5295 7');
+    await page.getByRole('button', { name: 'Annuler', exact: true }).click();
+    await page.getByText('Mobile Beneficiary', { exact: true }).waitFor();
+    assert.equal(await page.locator('.client-card').count(), 1);
+    await page.goto(base + '/operations/transfer');
+    await page.getByLabel('Bénéficiaire', { exact: false }).selectOption(clientId);
+    assert.equal(await page.locator('#clientId').inputValue(), clientId);
     await page.goto(base + '/settings');
     await page.getByLabel('Montant (CHF)', { exact: true }).waitFor();
     assert.match(await page.locator('.settings-balances dd').first().innerText(), /75[.,]25 CHF/);
@@ -58,6 +123,7 @@ exports.verifyFundsUi = async function verifyFundsUi(base, token, clientId) {
     assert.match(await page.locator('.settings-balances dd').nth(1).innerText(), /20[.,]00 EUR/);
     assert.deepEqual(errors, []);
     await context.close();
-    console.log('PASS: mobile Plus → Paramètres → add funds → transfer; balances persisted after reload; validation and small-screen layout.');
+    console.log('PASS: mobile funds → empty beneficiaries → retry → creation → restored draft and selected beneficiary → transfer; persistence, duplicate rejection, creation failure recovery and small-screen layout.');
+    return clientId;
   } finally { await browser.close(); }
 };

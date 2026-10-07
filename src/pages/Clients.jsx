@@ -22,10 +22,10 @@ function Clients() {
   useEffect(() => {
     loadClients()
     // Charger les favoris depuis le localStorage
-    const savedFavorites = localStorage.getItem('beneficiaryFavorites')
-    if (savedFavorites) {
-      setFavorites(new Set(JSON.parse(savedFavorites)))
-    }
+    try {
+      const savedFavorites = JSON.parse(localStorage.getItem('beneficiaryFavorites') || '[]')
+      if (Array.isArray(savedFavorites)) setFavorites(new Set(savedFavorites))
+    } catch { /* Ignore invalid device preferences so beneficiaries remain accessible. */ }
   }, [])
 
   const toggleFavorite = (clientId) => {
@@ -37,31 +37,27 @@ function Clients() {
         newFavorites.add(clientId)
       }
       // Sauvegarder dans le localStorage
-      localStorage.setItem('beneficiaryFavorites', JSON.stringify(Array.from(newFavorites)))
+      try { localStorage.setItem('beneficiaryFavorites', JSON.stringify(Array.from(newFavorites))) } catch { /* Favorites still work for this session. */ }
       return newFavorites
     })
   }
 
   const loadClients = async () => {
+    setLoading(true)
+    setError('')
     try {
       const response = await api.get('/clients')
-      if (response.data.success) {
-        setClients(response.data.data || [])
-      }
+      if (!response.data.success || !Array.isArray(response.data.data)) throw new Error('Chargement impossible')
+      setClients(response.data.data)
     } catch (error) {
-      setError('Erreur lors du chargement des clients')
-      console.error(error)
+      setError('Impossible de charger les bénéficiaires. Réessayez.')
     } finally {
       setLoading(false)
     }
   }
 
 
-  const filteredClients = clients.filter(client =>
-    (client.firstName && client.firstName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    client.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.accountNumber.includes(searchTerm)
-  )
+  const filteredClients = clients.filter(client => [client.firstName, client.lastName, client.accountNumber].some(value => (value || '').toLowerCase().includes(searchTerm.toLowerCase())))
 
   if (loading) {
     return (
@@ -94,7 +90,7 @@ function Clients() {
         </Link>
       </div>
 
-      {error && <div className="error-message">{error}</div>}
+      {error && <div className="error-message" role="alert"><p>{error}</p><button type="button" className="btn btn-primary" onClick={loadClients}>Réessayer</button></div>}
 
       <div className="search-section">
         <div className="search-wrapper">
@@ -114,7 +110,7 @@ function Clients() {
         )}
       </div>
 
-      {filteredClients.length === 0 ? (
+      {error ? null : filteredClients.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon-wrapper">
             <FiUsers size={64} />

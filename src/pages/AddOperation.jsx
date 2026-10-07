@@ -1,30 +1,33 @@
 import React, { useState, useEffect } from 'react'
 import { formatAmount } from '../services/money'
 import AmountInput from '../components/AmountInput'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { FiArrowLeft, FiUser, FiRepeat, FiDollarSign, FiFileText, FiSave, FiX, FiLayers, FiClock, FiZap, FiAlertCircle } from 'react-icons/fi'
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
+import { FiArrowLeft, FiUser, FiUserPlus, FiRepeat, FiDollarSign, FiFileText, FiSave, FiX, FiLayers, FiClock, FiZap, FiAlertCircle } from 'react-icons/fi'
 import api from '../services/api'
 import { calculateBalances } from '../services/balances'
-import { useAuth } from '../contexts/AuthContext'
 import './AddOperation.css'
 
 function AddOperation() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const clientIdParam = searchParams.get('clientId')
-  const { setUser } = useAuth()
+  const draft = location.state?.transferDraft || {}
+  const source = ['chf', 'eur', 'usd'].includes(draft.adminAccountType) ? draft.adminAccountType : 'chf'
 
   const [clients, setClients] = useState([])
+  const [clientsLoading, setClientsLoading] = useState(true)
+  const [clientsError, setClientsError] = useState('')
   const [adminAccount, setAdminAccount] = useState(null)
   const [adminBalance, setAdminBalance] = useState({ chf: 0, eur: 0, usd: 0 })
   const [formData, setFormData] = useState({
-    clientId: clientIdParam || '',
+    clientId: clientIdParam || draft.clientId || '',
     adminAccountId: '',
-    adminAccountType: 'chf', // Type de compte admin source
-    amount: '',
-    currency: 'CHF',
-    description: '',
-    transferType: 'instant' // 'instant' ou 'delayed'
+    adminAccountType: source,
+    amount: typeof draft.amount === 'string' ? draft.amount : '',
+    currency: source.toUpperCase(),
+    description: typeof draft.description === 'string' ? draft.description : '',
+    transferType: draft.transferType === 'delayed' ? 'delayed' : 'instant'
   })
   const [loading, setLoading] = useState(false)
   const [balanceLoading, setBalanceLoading] = useState(true)
@@ -48,16 +51,17 @@ function AddOperation() {
 
 
   const loadClients = async () => {
+    setClientsLoading(true)
+    setClientsError('')
     try {
       const response = await api.get('/clients')
-      if (response.data.success) {
-        const clientsData = response.data.data || []
-        console.log('Clients loaded:', clientsData)
-        setClients(clientsData)
-      }
+      if (!response.data.success || !Array.isArray(response.data.data)) throw new Error('Chargement impossible')
+      const clientsData = response.data.data
+      setClients(clientsData)
+      setFormData(previous => ({ ...previous, clientId: clientsData.some(client => client._id === previous.clientId && (!client.status || client.status === 'active')) ? previous.clientId : '' }))
     } catch (error) {
-      console.error('Erreur lors du chargement des clients:', error)
-    }
+      setClientsError('Impossible de charger les bénéficiaires. Réessayez.')
+    } finally { setClientsLoading(false) }
   }
 
   const loadAdminAccount = async () => {
@@ -108,7 +112,7 @@ function AddOperation() {
     setError('')
 
     // Validation
-    if (!formData.clientId) {
+    if (clientsLoading || clientsError || !clients.some(client => client._id === formData.clientId && (!client.status || client.status === 'active'))) {
       setError('Veuillez sélectionner un bénéficiaire')
       return
     }
@@ -209,6 +213,7 @@ function AddOperation() {
         </div>
       )}
       {balanceError && <div className="error-message" role="alert"><span>{balanceError}</span><button type="button" className="btn btn-primary" onClick={loadAdminAccount}>Réessayer</button></div>}
+      {location.state?.beneficiaryCreated && <p className="beneficiary-notice" role="status">Bénéficiaire ajouté et sélectionné. Vous pouvez poursuivre votre virement.</p>}
 
       <form onSubmit={handleSubmit} className="add-operation-form">
         {/* Informations de l'opération */}
@@ -230,21 +235,28 @@ function AddOperation() {
               name="clientId"
               value={formData.clientId}
               onChange={handleChange}
+              disabled={clientsLoading || !!clientsError || !clients.length}
+              aria-describedby="beneficiary-help"
               required
             >
-              <option value="" disabled>Sélectionner un bénéficiaire</option>
+              <option value="" disabled>{clientsLoading ? 'Chargement des bénéficiaires…' : clientsError ? 'Liste indisponible' : !clients.length ? 'Aucun bénéficiaire enregistré' : 'Sélectionner un bénéficiaire'}</option>
               {clients.map((client) => {
-                console.log('Client data:', client)
                 const displayName = client.firstName && client.lastName 
                   ? `${client.firstName} ${client.lastName}`
                   : client.firstName || client.lastName || client.accountNumber || 'Client sans nom'
                 return (
-                  <option key={client._id} value={client._id}>
-                    {displayName}
+                  <option key={client._id} value={client._id} disabled={!!client.status && client.status !== 'active'}>
+                    {displayName}{client.status && client.status !== 'active' ? ' (indisponible)' : ''}
                   </option>
                 )
               })}
             </select>
+            <div id="beneficiary-help" className="beneficiary-help">
+              {clientsError ? <div role="alert"><p>{clientsError}</p><button type="button" className="funds-shortcut" onClick={loadClients}>Réessayer</button></div> : !clientsLoading && !clients.length ? <p>Ajoutez votre premier bénéficiaire pour effectuer un virement.</p> : null}
+              <button type="button" className="funds-shortcut beneficiary-add" onClick={() => navigate('/clients/new', { state: { returnTo: location.pathname, transferDraft: formData } })}>
+                <FiUserPlus size={20} aria-hidden="true" /> Ajouter un bénéficiaire
+              </button>
+            </div>
           </div>
 
           <div className="form-group">
@@ -379,7 +391,7 @@ function AddOperation() {
           <button 
             type="submit" 
             className="btn btn-primary" 
-            disabled={loading || showConfirmation || balanceLoading || !!balanceError}
+            disabled={loading || showConfirmation || balanceLoading || !!balanceError || clientsLoading || !!clientsError || !formData.clientId}
           >
             <FiSave size={18} /> 
             <span>Continuer</span>
