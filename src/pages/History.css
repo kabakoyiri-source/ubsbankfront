@@ -1,0 +1,194 @@
+/* ================= History.css ================= */
+
+.history-screen {
+  background: #f2f2f7;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
+}
+
+.history-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #fff;
+}
+
+.history-top h1 {
+  font-size: 28px;
+  font-weight: 400;
+}
+
+.bac{
+  font-size: 26px;
+  background: transparent;
+  border: none;
+  color: #000;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.filter-bar {
+  background: #fff;
+  padding: 0 16px 12px;
+  border-bottom: 1px solid #e5e5ea;
+}
+
+.filter-label {
+  font-size: 14px;
+  color: #6e6e73;
+  margin-bottom: 8px;
+}
+
+.filter-tabs {
+  display: flex;
+  background: #e5e5ea;
+}
+
+.tab {
+  flex: 1;
+  padding: 10px 4px;
+  font-size: 13px;
+  border: none;
+  background: transparent;
+  transition: background 0.25s ease;
+}
+
+.tab.active {
+  background: #fff;
+  font-weight: 600;
+}
+
+.filter-info {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #8e8e93;
+}
+
+.year-label {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6e6e73;
+}
+
+.transaction-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e5ea;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.3s ease;
+}
+
+.transaction-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  transition: transform 0.3s ease;
+}
+
+.transaction-row.swiped .transaction-content {
+  transform: translateX(-80px);
+}
+
+.delete-action {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 80px;
+  background: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(80px);
+  transition: transform 0.3s ease;
+}
+
+.transaction-row.swiped .delete-action {
+  transform: translateX(0);
+}
+
+.delete-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.delete-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.delete-btn:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.tx-title {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.tx-sub {
+  font-size: 11px;
+  color: #8e8e93;
+}
+
+.tx-date {
+  color: #747f8d;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scheduled-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #f0f4f8;
+  color: #0076aa;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  width: fit-content;
+  margin-top: 4px;
+}
+
+.tx-amount {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.loading {
+  padding: 24px;
+  text-align: center;
+  color: #8e8e93;
+}
+
+/* Amount styles */
+.amount-positive {
+  color: #10b981;
+}
+
+.amount-negative {
+  color: #dc2626;
+}
+
+@media (max-width: 430px) {
+  .history-top h1 { font-size: 24px }
+}
