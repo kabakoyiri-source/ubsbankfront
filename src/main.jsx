@@ -16,6 +16,7 @@ if (import.meta.env.DEV && 'serviceWorker' in navigator) {
 
 class ErrorBoundary extends React.Component {
   state = { hasError: false }
+  componentDidMount() { window.__UBS_MARK_READY__?.() }
   static getDerivedStateFromError() { return { hasError: true } }
   componentDidCatch(error, info) { console.error('Erreur de l’application', error, info) }
   render() {
@@ -32,4 +33,3 @@ class ErrorBoundary extends React.Component {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode><ErrorBoundary><App /></ErrorBoundary></React.StrictMode>,
 )
-window.__UBS_APP_READY__ = true

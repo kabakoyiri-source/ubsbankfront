@@ -19,7 +19,8 @@
     "dev": "vite --force",
     "build": "vite build",
     "preview": "vite preview",
-    "verify:mobile": "node scripts/verify-mobile.cjs"
+    "verify:mobile": "node scripts/verify-mobile.cjs",
+    "verify:pwa-recovery": "node scripts/verify-pwa-recovery.cjs"
   },
   "devDependencies": {
     "playwright": "1.62.1",

@@ -16,7 +16,11 @@ Le cache inclut les fichiers JavaScript et CSS produits par la compilation. Les 
 
 Chaque service worker sert la page HTML et les fichiers de sa propre compilation. Il ne mélange plus une nouvelle page HTML avec d’anciens fichiers en cache. L’installation vérifie aussi les types des fichiers : une réponse HTML reçue à la place d’un fichier JavaScript ou CSS fait échouer la nouvelle installation, en conservant la version active. Les chemins des fichiers statiques manquants ne sont plus réécrits vers la page HTML par Vercel.
 
-Si un fichier de démarrage échoue malgré tout, la page HTML affiche « Réparer et recharger », même si React ne démarre pas. Cette action vérifie la connexion, retire le service worker de l’application et ses caches, puis recharge une URL actualisée. Elle conserve localStorage et IndexedDB, donc les identifiants mémorisés. Elle ne purge aucun cache si le site est inaccessible. Pour sortir d’une ancienne page sans ce bouton, ouvrir le site avec `?pwa-repair=1` puis accepter « Actualiser » si proposé.
+Les anciens caches `ubs-bank-v1` / `ubs-bank-v2` ne contenaient que la page et le logo. Si leurs fichiers JavaScript/CSS sont absents ou invalides, le nouveau service worker s’active automatiquement après avoir entièrement téléchargé et validé la nouvelle compilation, puis recharge les fenêtres contrôlées. Les mises à jour d’une installation fonctionnelle attendent toujours le bouton « Actualiser ». Une nouvelle installation incomplète conserve le cache précédent.
+
+Si un fichier de démarrage échoue malgré tout, la page HTML affiche « Réparer et recharger », même si React ne démarre pas. Cette action vérifie la connexion, retire le service worker de l’application et ses caches, puis recharge une URL actualisée. Elle conserve localStorage et IndexedDB, donc les identifiants mémorisés. Elle ne purge aucun cache si le site est inaccessible. Pour sortir d’une ancienne page sans ce bouton, ouvrir [la page de réparation](https://ubsbankfront.vercel.app/?pwa-repair=1) sur le téléphone après déploiement. Cette URL demande une page fraîche au réseau ; hors connexion, la version installée reste disponible. Si l’ancienne PWA est encore ouverte, la fermer complètement et la rouvrir après cette visite.
+
+Le démarrage n’est marqué comme réussi qu’après le premier affichage React et la vérification du chargement des styles. Si les fichiers arrivent après l’affichage du secours, l’application redevient visible dès que son démarrage réussit.
 
 ## Vérification
 
@@ -27,6 +31,7 @@ Pour relancer les contrôles :
 ```text
 npm run build
 npm run verify:mobile
+npm run verify:pwa-recovery
 ```
 
 Le contrôle utilise Chrome installé localement. Les captures et le rapport sont écrits dans `qa/`, un dossier ignoré par Git.

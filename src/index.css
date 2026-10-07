@@ -5,6 +5,7 @@
 }
 
 :root {
+  --ubs-styles-ready: 1;
   /* Couleurs principales */
   --primary-color: #2563eb;
   --primary-dark: #1e40af;

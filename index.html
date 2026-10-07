@@ -88,6 +88,7 @@
         const recovery = document.getElementById('startup-recovery');
         const button = document.getElementById('repair-startup');
         const message = document.getElementById('repair-message');
+        let assetFailed = false;
         const showRecovery = () => {
           if (window.__UBS_APP_READY__) return;
           document.getElementById('root').hidden = true;
@@ -95,8 +96,19 @@
         };
         window.addEventListener('error', event => {
           const element = event.target;
-          if (element instanceof HTMLScriptElement || element instanceof HTMLLinkElement && element.rel === 'stylesheet') showRecovery();
+          if (element instanceof HTMLScriptElement || element instanceof HTMLLinkElement && element.rel === 'stylesheet') {
+            assetFailed = true;
+            showRecovery();
+          }
         }, true);
+        window.__UBS_MARK_READY__ = () => {
+          const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
+          const stylesReady = getComputedStyle(document.documentElement).getPropertyValue('--ubs-styles-ready').trim() === '1';
+          if (assetFailed || !stylesReady || styles.some(link => !link.sheet)) return showRecovery();
+          window.__UBS_APP_READY__ = true;
+          document.getElementById('root').hidden = false;
+          recovery.hidden = true;
+        };
         setTimeout(showRecovery, 15000);
         button.addEventListener('click', async () => {
           button.disabled = true;
