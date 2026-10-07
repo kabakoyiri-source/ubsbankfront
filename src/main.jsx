@@ -32,3 +32,4 @@ class ErrorBoundary extends React.Component {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode><ErrorBoundary><App /></ErrorBoundary></React.StrictMode>,
 )
+window.__UBS_APP_READY__ = true

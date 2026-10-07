@@ -13,16 +13,22 @@ const user = { id: 'test-admin', firstName: 'Jean', lastName: 'Dupont', email: '
 const client = { _id: 'test-client', firstName: 'Marie', lastName: 'Martin', email: 'marie@example.test', phone: '+41 00 000 00 00', accountNumber: 'CH93 0076 2011 6238 5295 7', bankName: 'Banque de démonstration', bankAddress: 'Rue de la Paix', status: 'active', balance: 1234, currency: 'CHF', createdAt: new Date().toISOString() };
 const operations = [{ _id: 'test-operation', type: 'deposit', amount: 1234567.89, currency: 'CHF', status: 'completed', clientId: client, description: 'Opération de démonstration', createdAt: new Date().toISOString(), sourceAccount: 'chf' }];
 let updateVersion = false;
+const assetFiles = fs.readdirSync(path.join(dist, 'assets')).filter(file => /\.(js|css)$/.test(file));
+const renameAssets = html => assetFiles.reduce((content, file) => content.replaceAll('/assets/' + file, '/assets/updated-' + file), html);
 const server = http.createServer((req, res) => {
   const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
-  const file = path.resolve(dist, '.' + (pathname === '/' ? '/index.html' : pathname));
+  const staticPath = updateVersion && pathname.startsWith('/assets/updated-') ? pathname.replace('/assets/updated-', '/assets/') : pathname;
+  const file = path.resolve(dist, '.' + (staticPath === '/' ? '/index.html' : staticPath));
   if (!file.startsWith(dist + path.sep)) { res.writeHead(403); return res.end(); }
-  const target = fs.existsSync(file) && fs.statSync(file).isFile() ? file : path.join(dist, 'index.html');
+  const missing = !fs.existsSync(file) || !fs.statSync(file).isFile() || updateVersion && pathname.startsWith('/assets/') && !pathname.startsWith('/assets/updated-');
+  if (missing && /^\/(assets|images|api)(\/|$)/.test(pathname)) { res.writeHead(404, { 'Content-Type': 'text/plain' }); return res.end('Not found'); }
+  const target = missing ? path.join(dist, 'index.html') : file;
   const mime = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png' };
   res.setHeader('Content-Type', mime[path.extname(target)] || 'application/octet-stream');
   res.setHeader('Cache-Control', 'no-cache');
   let content = fs.readFileSync(target);
-  if (updateVersion && pathname === '/service-worker.js') content = content.toString().replace(/const CACHE_NAME = .+;/, "const CACHE_NAME = 'ubs-bank-qa-update';");
+  if (updateVersion && pathname === '/service-worker.js') content = renameAssets(content.toString().replace(/const CACHE_NAME = .+;/, "const CACHE_NAME = 'ubs-bank-qa-update';"));
+  if (updateVersion && target.endsWith('index.html')) content = renameAssets(content.toString());
   res.end(content);
 });
 
@@ -311,6 +317,16 @@ async function main() {
       await caches.open('another-app');
     });
     updateVersion = true;
+    // The host now serves HTML with new hashes and has removed the old files.
+    // A navigation still has to use the active worker's matching cached build.
+    await pwaPage.goto(base + '/accounts');
+    await pwaPage.locator('.accounts-container').waitFor();
+    const activeScript = await pwaPage.locator('script[type="module"]').getAttribute('src');
+    assert(!activeScript.includes('updated-'), 'Active worker mixed a new HTML document with old assets');
+    const missingAsset = await pwaContext.request.get(base + '/assets/' + assetFiles[0]);
+    assert.equal(missingAsset.status(), 404);
+    await pwaPage.goto(base + '/operations/new');
+    await pwaPage.locator('input[name="amount"]').fill('123');
     await pwaPage.evaluate(async () => (await navigator.serviceWorker.getRegistration()).update());
     await pwaPage.getByText('Une mise à jour est disponible.').waitFor();
     assert.equal(await pwaPage.locator('input[name="amount"]').inputValue(), '123');
@@ -318,6 +334,7 @@ async function main() {
     await pwaPage.waitForFunction(async () => !(await caches.keys()).includes('ubs-bank-v2'));
     assert(await pwaPage.evaluate(async () => (await caches.keys()).includes('another-app')));
     await pwaPage.locator('.app-bottom-nav').waitFor();
+    assert((await pwaPage.locator('script[type="module"]').getAttribute('src')).includes('updated-'));
     offlineState.offline = true;
     await pwaContext.setOffline(true);
     await pwaPage.goto(base + '/accounts');
@@ -325,6 +342,51 @@ async function main() {
     assert.equal(await pwaPage.evaluate(() => localStorage.getItem('token')), 'test-token');
     await pwaPage.getByText('Hors connexion. Les opérations nécessitent Internet.').waitFor();
     await pwaContext.close();
+
+    // Even when JS cannot load, HTML alone offers recovery and retains credentials.
+    const repairContext = await browser.newContext({ serviceWorkers: 'block' });
+    let failScript = true;
+    await repairContext.route('**/assets/*.js', route => failScript ? route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html>wrong deployment' }) : route.continue());
+    const repairPage = await repairContext.newPage();
+    await repairPage.goto(base + '/login');
+    await repairPage.getByRole('button', { name: 'Réparer et recharger' }).waitFor();
+    await repairPage.evaluate(async () => {
+      localStorage.setItem('remember-repair-test', 'preserved');
+      await caches.open('ubs-bank-broken');
+      await caches.open('another-app-repair');
+      await new Promise((resolve, reject) => {
+        const request = indexedDB.open('repair-retention-test', 1);
+        request.onupgradeneeded = () => request.result.createObjectStore('data');
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const db = request.result;
+          const tx = db.transaction('data', 'readwrite');
+          tx.objectStore('data').put('preserved', 'remembered');
+          tx.oncomplete = () => { db.close(); resolve(); };
+        };
+      });
+    });
+    await repairContext.setOffline(true);
+    await repairPage.getByRole('button', { name: 'Réparer et recharger' }).click();
+    await repairPage.getByText('Impossible de joindre l’application. Vérifiez Internet puis réessayez.').waitFor();
+    assert((await repairPage.evaluate(() => caches.keys())).includes('ubs-bank-broken'), 'Offline repair must preserve the existing cache');
+    await repairContext.setOffline(false);
+    failScript = false;
+    await repairPage.getByRole('button', { name: 'Réparer et recharger' }).click();
+    await repairPage.getByRole('button', { name: 'Se connecter', exact: true }).waitFor();
+    assert.equal(await repairPage.evaluate(() => localStorage.getItem('remember-repair-test')), 'preserved');
+    const repairCacheKeys = await repairPage.evaluate(() => caches.keys());
+    assert(!repairCacheKeys.includes('ubs-bank-broken'));
+    assert(repairCacheKeys.includes('another-app-repair'));
+    assert.equal(await repairPage.evaluate(() => new Promise(resolve => {
+      const request = indexedDB.open('repair-retention-test', 1);
+      request.onsuccess = () => {
+        const db = request.result;
+        const read = db.transaction('data').objectStore('data').get('remembered');
+        read.onsuccess = () => { db.close(); resolve(read.result); };
+      };
+    })), 'preserved');
+    await repairContext.close();
 
     assert.deepEqual(errors, [], 'Unexpected JavaScript errors');
     fs.writeFileSync(path.join(qa, 'verification.json'), JSON.stringify({ count, failures, errors, safe, cached }, null, 2));

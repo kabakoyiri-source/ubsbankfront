@@ -5,10 +5,11 @@ import { createHash } from 'node:crypto'
 // Include Vite's actual hashed output so the installed app can load offline.
 export function pwaBuild() {
   let publicDir
+  let projectDir
   return {
     name: 'pwa-precache',
     apply: 'build',
-    configResolved(config) { publicDir = config.publicDir },
+    configResolved(config) { publicDir = config.publicDir; projectDir = config.root },
     generateBundle(_options, bundle) {
       const manifest = JSON.parse(fs.readFileSync(path.join(publicDir, 'manifest.json'), 'utf8'))
       const staticPaths = [...new Set([
@@ -17,6 +18,7 @@ export function pwaBuild() {
       ])]
       const template = fs.readFileSync(path.join(publicDir, 'service-worker.js'), 'utf8')
       const hash = createHash('sha256').update(template)
+      hash.update(fs.readFileSync(path.join(projectDir, 'index.html')))
       for (const file of staticPaths) hash.update(fs.readFileSync(path.join(publicDir, file.slice(1))))
       for (const file of Object.keys(bundle).sort()) {
         hash.update(file).update(bundle[file].code || bundle[file].source || '')

@@ -68,11 +68,64 @@
       html, body { margin: 0; background: #fff; }
       .startup-screen { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; background: #fff; }
       .startup-screen img { width: 240px; max-width: 72vw; height: auto; }
+      #startup-recovery { max-width: 420px; margin: 15vh auto; padding: 24px; color: #222; font: 16px/1.5 system-ui, sans-serif; }
+      #startup-recovery h1 { font-size: 24px; }
+      #startup-recovery button { margin-top: 12px; border: 0; border-radius: 10px; padding: 14px 18px; background: #c90022; color: white; font: inherit; cursor: pointer; }
     </style>
   </head>
   <body>
     <div id="root"><div class="startup-screen" role="status" aria-label="Chargement de l’application"><img src="/images/logo-wordmark.png" width="240" height="86" alt="UBS" /></div></div>
     <noscript>Activez JavaScript pour utiliser l’application.</noscript>
+    <div id="startup-recovery" hidden role="alert">
+      <h1>Le chargement a été interrompu</h1>
+      <p>Une ancienne version peut être restée en mémoire. Réparez le chargement pour retrouver l’application.</p>
+      <button type="button" id="repair-startup">Réparer et recharger</button>
+      <p id="repair-message">Vos identifiants mémorisés seront conservés.</p>
+    </div>
+    <script>
+      // Independent of the React bundle, so a missing JS/CSS file can be repaired.
+      (() => {
+        const recovery = document.getElementById('startup-recovery');
+        const button = document.getElementById('repair-startup');
+        const message = document.getElementById('repair-message');
+        const showRecovery = () => {
+          if (window.__UBS_APP_READY__) return;
+          document.getElementById('root').hidden = true;
+          recovery.hidden = false;
+        };
+        window.addEventListener('error', event => {
+          const element = event.target;
+          if (element instanceof HTMLScriptElement || element instanceof HTMLLinkElement && element.rel === 'stylesheet') showRecovery();
+        }, true);
+        setTimeout(showRecovery, 15000);
+        button.addEventListener('click', async () => {
+          button.disabled = true;
+          message.textContent = 'Réparation en cours…';
+          try {
+            // This uncached SPA route checks the network without hitting a cached shell.
+            const response = await fetch('/__pwa-repair-check__?v=' + Date.now(), { cache: 'reload' });
+            if (!response.ok || !(response.headers.get('content-type') || '').includes('text/html')) throw new Error();
+            if ('serviceWorker' in navigator) {
+              const registrations = await navigator.serviceWorker.getRegistrations();
+              await Promise.all(registrations.filter(registration => {
+                const worker = registration.active || registration.waiting || registration.installing;
+                return worker && new URL(worker.scriptURL).pathname === '/service-worker.js';
+              }).map(registration => registration.unregister()));
+            }
+            if ('caches' in window) {
+              const keys = await caches.keys();
+              await Promise.all(keys.filter(key => key.startsWith('ubs-bank-')).map(key => caches.delete(key)));
+            }
+            const destination = new URL(location.href);
+            destination.searchParams.set('pwa-repair', String(Date.now()));
+            location.replace(destination.href);
+          } catch {
+            message.textContent = 'Impossible de joindre l’application. Vérifiez Internet puis réessayez.';
+            button.disabled = false;
+          }
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

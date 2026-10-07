@@ -14,6 +14,10 @@ Cette option est réservée à un appareil personnel : une personne ayant accès
 
 Le cache inclut les fichiers JavaScript et CSS produits par la compilation. Les requêtes API ne sont pas mises en cache. Une mise à jour attend l’action « Actualiser », sans interrompre automatiquement un formulaire ; cette action recharge la page et efface donc les saisies non enregistrées.
 
+Chaque service worker sert la page HTML et les fichiers de sa propre compilation. Il ne mélange plus une nouvelle page HTML avec d’anciens fichiers en cache. L’installation vérifie aussi les types des fichiers : une réponse HTML reçue à la place d’un fichier JavaScript ou CSS fait échouer la nouvelle installation, en conservant la version active. Les chemins des fichiers statiques manquants ne sont plus réécrits vers la page HTML par Vercel.
+
+Si un fichier de démarrage échoue malgré tout, la page HTML affiche « Réparer et recharger », même si React ne démarre pas. Cette action vérifie la connexion, retire le service worker de l’application et ses caches, puis recharge une URL actualisée. Elle conserve localStorage et IndexedDB, donc les identifiants mémorisés. Elle ne purge aucun cache si le site est inaccessible. Pour sortir d’une ancienne page sans ce bouton, ouvrir le site avec `?pwa-repair=1` puis accepter « Actualiser » si proposé.
+
 ## Vérification
 
 La compilation et le script `scripts/verify-mobile.cjs` vérifient 15 écrans sur six formats, les dimensions des icônes et leur zone de sécurité, les images de lancement, les marges système simulées, la déconnexion, les erreurs de connexion, la reprise après une panne, les fenêtres de confirmation en paysage, le cache hors ligne et l’activation d’une mise à jour. Les données API sont simulées : aucune transaction réelle n’est créée.
