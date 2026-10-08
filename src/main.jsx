@@ -1,8 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
+import { initializeIosViewport } from './services/iosViewport'
 import './index.css'
 import './mobile.css'
+
+initializeIosViewport()
 
 // Development must never keep the production shell cached.
 if (import.meta.env.DEV && 'serviceWorker' in navigator) {

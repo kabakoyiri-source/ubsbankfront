@@ -20,6 +20,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "verify:mobile": "node scripts/verify-mobile.cjs",
+    "verify:ios": "node scripts/verify-ios.cjs",
     "verify:pwa-recovery": "node scripts/verify-pwa-recovery.cjs"
   },
   "devDependencies": {

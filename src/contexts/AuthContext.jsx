@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
 import api from '../services/api'
 
 const AuthContext = createContext()
@@ -17,35 +17,68 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [authCheckError, setAuthCheckError] = useState(null)
+  const authGeneration = useRef(0)
+
+  const logout = useCallback(() => {
+    // Synchronous storage removal also runs when iOS freezes the hidden app.
+    authGeneration.current += 1
+    localStorage.removeItem('token')
+    localStorage.removeItem('selectedOperation')
+    setUser(null)
+    setIsAuthenticated(false)
+    setAuthCheckError(null)
+    setLoading(false)
+  }, [])
 
   useEffect(() => {
-    checkAuth()
+    if (document.visibilityState === 'hidden') logout()
+    else checkAuth()
+    const hidden = () => { if (document.visibilityState === 'hidden') logout() }
+    const exited = () => logout()
+    const restored = () => { if (!localStorage.getItem('token')) logout() }
+    const sessionRemoved = event => { if (event.key === 'token' && !event.newValue) logout() }
+    document.addEventListener('visibilitychange', hidden)
+    window.addEventListener('pagehide', exited)
+    window.addEventListener('pageshow', restored)
+    window.addEventListener('storage', sessionRemoved)
+    return () => {
+      document.removeEventListener('visibilitychange', hidden)
+      window.removeEventListener('pagehide', exited)
+      window.removeEventListener('pageshow', restored)
+      window.removeEventListener('storage', sessionRemoved)
+    }
   }, [])
 
   const checkAuth = async () => {
     setLoading(true)
     setAuthCheckError(null)
+    const generation = authGeneration.current
     const token = localStorage.getItem('token')
     if (token) {
       try {
         const response = await api.get('/auth/me')
+        if (generation !== authGeneration.current || localStorage.getItem('token') !== token) return
+        if (document.visibilityState === 'hidden') { logout(); return }
         if (response.data.success) {
           setUser(response.data.user)
           setIsAuthenticated(true)
         }
       } catch (error) {
+        if (generation !== authGeneration.current) return
         if (error.response?.status === 401) localStorage.removeItem('token')
         else setAuthCheckError('Impossible de vérifier votre connexion. Vérifiez Internet puis réessayez.')
         setIsAuthenticated(false)
       }
     }
-    setLoading(false)
+    if (generation === authGeneration.current) setLoading(false)
   }
 
   const login = async (email, password) => {
+    const generation = authGeneration.current
     try {
       setError(null)
       const response = await api.post('/auth/login', { email, password })
+      if (generation !== authGeneration.current || document.visibilityState === 'hidden') return { success: false, message: 'La page a été quittée. Appuyez sur « Se connecter » pour reprendre.' }
       if (response.data.success) {
         localStorage.setItem('token', response.data.token)
         setUser(response.data.user)
@@ -73,6 +106,7 @@ export function AuthProvider({ children }) {
   }
 
   const register = async (email, password, firstName, lastName) => {
+    const generation = authGeneration.current
     try {
       setError(null)
       const response = await api.post('/auth/register', {
@@ -81,6 +115,7 @@ export function AuthProvider({ children }) {
         firstName,
         lastName
       })
+      if (generation !== authGeneration.current || document.visibilityState === 'hidden') return { success: false, message: 'La page a été quittée. Reconnectez-vous pour reprendre.' }
       if (response.data.success) {
         localStorage.setItem('token', response.data.token)
         setUser(response.data.user)
@@ -92,13 +127,6 @@ export function AuthProvider({ children }) {
       setError(message)
       return { success: false, message }
     }
-  }
-
-  const logout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('selectedOperation')
-    setUser(null)
-    setIsAuthenticated(false)
   }
 
   const value = {

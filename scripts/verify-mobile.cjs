@@ -36,6 +36,7 @@ async function mockApi(context, state = {}) {
   await context.route('**/api/**', async route => {
     const url = new URL(route.request().url());
     if (state.offline) return route.abort('internetdisconnected');
+    if (state.expired && !['/api/auth/login', '/api/auth/register'].includes(url.pathname)) return route.fulfill({ status: 401, json: { success: false } });
     if (state.failData && !url.pathname.startsWith('/api/auth')) return route.fulfill({ status: 503, json: { message: 'Indisponible' } });
     if (url.pathname === '/api/auth/me') {
       if (state.expired) return route.fulfill({ status: 401, json: { success: false } });
@@ -43,6 +44,7 @@ async function mockApi(context, state = {}) {
       return route.fulfill({ json: { success: true, user } });
     }
     if (url.pathname === '/api/auth/login') {
+      if (state.waitLogin) await state.waitLogin;
       if (state.acceptLogin) return route.fulfill({ json: { success: true, token: 'test-token', user } });
       return route.fulfill({ status: 401, json: { success: false, message: 'Identifiants incorrects' } });
     }
@@ -264,6 +266,36 @@ async function main() {
     assert.equal(stored.extractable, false);
     assert.notEqual(stored.decodedBytes, 'test-password-123');
     assert.equal(await memoryPage.evaluate(() => JSON.stringify({ ...localStorage }).includes('test-password-123')), false);
+    // Leaving the foreground or document ends the session, while device
+    // credentials remain available for the next explicit login.
+    for (const event of ['visibilitychange', 'pagehide']) {
+      await memoryPage.evaluate(event => {
+        if (event === 'visibilitychange') {
+          Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+          document.dispatchEvent(new Event(event));
+          Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
+        } else window.dispatchEvent(new PageTransitionEvent(event, { persisted: true }));
+        window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+      }, event);
+      await memoryPage.waitForFunction(() => document.querySelector('#login-email') && !document.querySelector('#login-email').disabled);
+      assert.equal(await memoryPage.evaluate(() => localStorage.getItem('token')), null);
+      assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-123');
+      await memoryPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+      await memoryPage.locator('.favorites-section').waitFor();
+    }
+    await memoryPage.goto(base + '/accounts');
+    await memoryPage.waitForFunction(() => document.querySelector('#login-email') && !document.querySelector('#login-email').disabled);
+    assert.equal(await memoryPage.evaluate(() => localStorage.getItem('token')), null, 'Leaving a document must clear its session');
+    await memoryPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+    await memoryPage.locator('.favorites-section').waitFor();
+    await memoryPage.close();
+    memoryPage = await memoryContext.newPage();
+    await memoryPage.goto(base + '/accounts');
+    await memoryPage.waitForFunction(() => document.querySelector('#login-email') && !document.querySelector('#login-email').disabled);
+    assert.equal(await memoryPage.evaluate(() => localStorage.getItem('token')), null, 'Closing and reopening must require login');
+    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-123');
+    await memoryPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+    await memoryPage.locator('.favorites-section').waitFor();
     await logout();
     assert.equal(await memoryPage.getByLabel('Email', { exact: true }).inputValue(), 'remember@example.test');
     assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-123');
@@ -277,7 +309,7 @@ async function main() {
     await memoryPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
     await memoryPage.locator('.favorites-section').waitFor();
     memoryState.expired = true;
-    await memoryPage.goto(base + '/accounts');
+    await memoryPage.getByRole('link', { name: 'Comptes', exact: true }).click();
     await memoryPage.waitForFunction(() => document.querySelector('#login-email') && !document.querySelector('#login-email').disabled);
     assert.equal(await memoryPage.getByLabel('Email', { exact: true }).inputValue(), 'remember@example.test');
     assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-123');
@@ -306,6 +338,29 @@ async function main() {
     await logout();
     assert.equal(await memoryPage.getByLabel('Email', { exact: true }).inputValue(), '');
     await memoryContext.close();
+
+    // A successful response received after backgrounding must not reopen
+    // the session. Hold the response to reproduce the race deterministically.
+    let releaseLogin;
+    const pendingContext = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
+    await mockApi(pendingContext, { acceptLogin: true, waitLogin: new Promise(resolve => { releaseLogin = resolve; }) });
+    const pendingPage = await pendingContext.newPage();
+    await pendingPage.goto(base + '/login');
+    await pendingPage.getByLabel('Email', { exact: true }).fill('pending@example.test');
+    await pendingPage.getByLabel('Mot de passe', { exact: true }).fill('pending-test-password');
+    const submitted = pendingPage.waitForRequest(request => request.url().endsWith('/api/auth/login'));
+    await pendingPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+    await submitted;
+    await pendingPage.evaluate(() => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+      document.dispatchEvent(new Event('visibilitychange'));
+      Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
+    });
+    releaseLogin();
+    await pendingPage.getByText('La page a été quittée. Appuyez sur « Se connecter » pour reprendre.', { exact: true }).waitFor();
+    assert.equal(await pendingPage.evaluate(() => localStorage.getItem('token')), null);
+    assert.equal(await pendingPage.locator('.app-bottom-nav').count(), 0);
+    await pendingContext.close();
 
     // Storage support is optional and must not prevent normal login.
     const unavailableContext = await browser.newContext({ viewport: { width: 320, height: 568 }, serviceWorkers: 'block' });

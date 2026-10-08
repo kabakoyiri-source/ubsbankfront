@@ -13,7 +13,7 @@ export function pwaBuild() {
     generateBundle(_options, bundle) {
       const manifest = JSON.parse(fs.readFileSync(path.join(publicDir, 'manifest.json'), 'utf8'))
       const staticPaths = [...new Set([
-        '/manifest.json', '/images/logo-wordmark.png', '/images/apple-touch-icon-v4.png',
+        '/manifest.json', '/images/logo-wordmark.png', '/images/apple-touch-icon-v5.png', '/apple-touch-icon.png',
         '/images/favicon-v4.png', ...manifest.icons.map(icon => icon.src),
       ])]
       const template = fs.readFileSync(path.join(publicDir, 'service-worker.js'), 'utf8')

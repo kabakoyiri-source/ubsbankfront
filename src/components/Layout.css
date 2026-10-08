@@ -1,9 +1,10 @@
 .layout {
   min-height: 100vh;
   min-height: 100dvh;
+  min-height: var(--app-viewport-height, 100dvh);
   background: #f5f5f5;
   padding-top: var(--app-safe-top);
-  padding-bottom: calc(var(--app-nav-height) + var(--app-safe-bottom));
+  padding-bottom: calc(var(--app-nav-height) + var(--app-nav-safe-bottom) + max(0px, var(--app-viewport-offset)) + 1px);
 }
 .layout::before {
   content: '';
@@ -22,9 +23,9 @@
 }
 .screen-dashboard { max-width: 600px; }
 .app-bottom-nav {
-  position: fixed; inset: auto 0 0; z-index: 1000;
+  position: fixed; inset: auto 0 var(--app-viewport-offset) 0; z-index: 1000;
   background: #fff; border-top: 1px solid #e5e7eb;
-  padding: 0 var(--app-safe-right) var(--app-safe-bottom) var(--app-safe-left);
+  padding: 0 var(--app-safe-right) var(--app-nav-safe-bottom) var(--app-safe-left);
   box-shadow: 0 -2px 12px rgb(0 0 0 / 4%);
 }
 .app-bottom-nav-inner {
@@ -39,6 +40,8 @@
 .app-nav-link span { font-size: 11px; font-weight: 500; white-space: nowrap; }
 .app-nav-link.active { color: #c90022; }
 .app-nav-link:active { background: #fff1f2; }
+html[data-platform="ios"] .app-bottom-nav-inner { padding-block: 1px; }
+html[data-platform="ios"] .app-nav-link { gap: 1px; }
 .screen-cards, .screen-plus, .screen-profile, .screen-about,
 .screen-history, .screen-operationdetails, .screen-loadbalance { padding: 0 var(--app-safe-right) 0 var(--app-safe-left); }
 .screen-cards .cards-page, .screen-plus .plus-page,

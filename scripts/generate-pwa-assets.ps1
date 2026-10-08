@@ -44,7 +44,7 @@ function Write-BrandImage([string]$name, [int]$width, [int]$height, [int]$logoWi
   } finally { $graphics.Dispose(); $bitmap.Dispose() }
 }
 
-# Standard/iOS icons use an 86% wordmark. Adaptive icons use the largest
+# Standard Android icons use an 86% wordmark. Adaptive icons use the largest
 # width that keeps the actual ink inside the 40%-radius safe circle.
 Write-BrandImage 'icon-192-v4.png' 192 192 165
 Write-BrandImage 'icon-512-v4.png' 512 512 440
@@ -52,7 +52,10 @@ foreach ($size in @(192, 512)) {
   $safeWidth = [int][Math]::Floor(($size * 0.4 - 2) / $maxInkRadius)
   Write-BrandImage "icon-maskable-$size-v4.png" $size $size ([Math]::Min([int]($size * 0.86), $safeWidth))
 }
-Write-BrandImage 'apple-touch-icon-v4.png' 180 180 155
+# iOS does not need Android's maskable margin. Enlarge just its wordmark to
+# 94% of the square; keep an opaque white background and the original ratio.
+Write-BrandImage 'apple-touch-icon-v5.png' 180 180 169
+Copy-Item -LiteralPath (Join-Path $imagesRoot 'apple-touch-icon-v5.png') -Destination (Join-Path $publicRoot 'apple-touch-icon.png') -Force
 Write-BrandImage 'favicon-v4.png' 32 32 28
 Write-BrandImage 'logo-wordmark.png' 1060 ([int][Math]::Round(1060 * $ratio)) 1060
 
