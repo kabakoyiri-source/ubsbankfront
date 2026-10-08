@@ -4,6 +4,7 @@ const http = require('node:http');
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 const sharp = require('sharp');
+const { checkSpacing } = require('./check-spacing.cjs');
 
 const root = path.resolve(__dirname, '..');
 const dist = path.join(root, 'dist');
@@ -128,6 +129,7 @@ async function main() {
         assert.equal(metrics.linkCount, 5);
         assert.equal(metrics.activeCount, 1);
         assert(Math.abs(metrics.navBottom - metrics.height) <= 1);
+        await checkSpacing(page);
         if (viewport.width === 390 && ['/', '/cards', '/operations/new'].includes(route)) {
           await page.screenshot({ path: path.join(qa, route === '/' ? 'home-mobile.png' : route === '/cards' ? 'cards-mobile.png' : 'payments-mobile.png'), fullPage: true });
         }

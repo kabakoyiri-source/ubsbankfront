@@ -11,8 +11,17 @@ exports.verifyFundsUi = async function verifyFundsUi(base, token) {
     await context.addInitScript(token => localStorage.setItem('token', token), token);
     let failList = true;
     let failCreation = true;
+    let failRemoval = true;
+    let removalRequests = 0;
     await context.route('**/api/**', async route => {
       const url = new URL(route.request().url());
+      if (url.pathname.startsWith('/api/clients/') && route.request().method() === 'DELETE') {
+        removalRequests++;
+        if (failRemoval) {
+          failRemoval = false;
+          return route.fulfill({ status: 503, json: { success: false, message: 'Suppression temporairement indisponible. Réessayez.' } });
+        }
+      }
       if (url.pathname === '/api/clients' && ((route.request().method() === 'GET' && failList) || (route.request().method() === 'POST' && failCreation))) {
         if (route.request().method() === 'GET') failList = false;
         else failCreation = false;
@@ -121,9 +130,64 @@ exports.verifyFundsUi = async function verifyFundsUi(base, token) {
     await page.reload();
     await page.getByLabel('Montant (CHF)', { exact: true }).waitFor();
     assert.match(await page.locator('.settings-balances dd').nth(1).innerText(), /20[.,]00 EUR/);
+
+    await page.goto(base + '/clients');
+    await page.getByRole('button', { name: 'Ajouter aux favoris', exact: true }).click();
+    await page.getByRole('button', { name: 'Supprimer Mobile Beneficiary', exact: true }).click();
+    const dialog = page.getByRole('alertdialog');
+    await dialog.waitFor();
+    assert(await dialog.getByRole('button', { name: 'Annuler', exact: true }).evaluate(button => button === document.activeElement));
+    await page.keyboard.press('Shift+Tab');
+    assert(await dialog.getByRole('button', { name: 'Supprimer le bénéficiaire', exact: true }).evaluate(button => button === document.activeElement));
+    await page.keyboard.press('Tab');
+    assert(await dialog.getByRole('button', { name: 'Annuler', exact: true }).evaluate(button => button === document.activeElement));
+    await page.keyboard.press('Escape');
+    assert.equal(await dialog.count(), 0);
+    assert.equal(removalRequests, 0, 'Cancelling must never remove a beneficiary');
+    assert(await page.getByRole('button', { name: 'Supprimer Mobile Beneficiary', exact: true }).evaluate(button => button === document.activeElement));
+    await page.getByRole('button', { name: 'Supprimer Mobile Beneficiary', exact: true }).click();
+    for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 844 }, { width: 844, height: 390 }]) {
+      await page.setViewportSize(viewport);
+      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+      await dialog.getByRole('button', { name: 'Supprimer le bénéficiaire', exact: true }).scrollIntoViewIfNeeded();
+      const bounds = await dialog.getByRole('button', { name: 'Supprimer le bénéficiaire', exact: true }).boundingBox();
+      assert(bounds.y >= 0 && bounds.y + bounds.height <= viewport.height + 1, 'Confirmation must stay reachable in landscape');
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.screenshot({ path: path.join(qa, 'delete-beneficiary-mobile.png'), animations: 'disabled' });
+    await dialog.getByRole('button', { name: 'Supprimer le bénéficiaire', exact: true }).click();
+    await dialog.getByRole('alert').filter({ hasText: 'Suppression temporairement indisponible' }).waitFor();
+    assert.equal(await page.locator('.client-card').count(), 1, 'A failed removal must preserve the beneficiary');
+    await dialog.getByRole('button', { name: 'Supprimer le bénéficiaire', exact: true }).evaluate(button => { button.click(); button.click(); });
+    await page.getByRole('status').filter({ hasText: 'Bénéficiaire supprimé.' }).waitFor();
+    assert.equal(removalRequests, 2, 'Repeated taps must not send duplicate removal requests');
+    assert.equal(await page.locator('.client-card').count(), 0);
+    assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('beneficiaryFavorites'))), []);
+    await page.reload();
+    await page.getByText('Aucun bénéficiaire trouvé', { exact: true }).waitFor();
+    await page.goto(base + '/operations/new?clientId=' + clientId);
+    await page.getByText('Ajoutez votre premier bénéficiaire pour effectuer un virement.', { exact: true }).waitFor();
+    assert.equal(await page.locator('#clientId option[value="' + clientId + '"]').count(), 0);
+
+    // The same IBAN can be re-added, and removal is also exposed on its detail page.
+    await page.goto(base + '/clients/new');
+    await fillBeneficiary();
+    await page.getByRole('button', { name: 'Créer le bénéficiaire', exact: true }).click();
+    await page.waitForURL('**/clients');
+    await page.getByRole('link', { name: /Mobile Beneficiary CH9300762011623852957/ }).click();
+    await page.waitForURL('**/clients/' + clientId);
+    await page.getByRole('heading', { name: 'Mobile Beneficiary', exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Supprimer le bénéficiaire', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Annuler', exact: true }).click();
+    assert.equal(await dialog.count(), 0);
+    await page.getByRole('button', { name: 'Supprimer le bénéficiaire', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Supprimer le bénéficiaire', exact: true }).click();
+    await page.waitForURL('**/clients');
+    await page.getByRole('status').filter({ hasText: 'Bénéficiaire supprimé.' }).waitFor();
+    assert.equal(await page.locator('.client-card').count(), 0);
     assert.deepEqual(errors, []);
     await context.close();
-    console.log('PASS: mobile funds → empty beneficiaries → retry → creation → restored draft and selected beneficiary → transfer; persistence, duplicate rejection, creation failure recovery and small-screen layout.');
+    console.log('PASS: mobile funds, beneficiary creation and transfer; removal from list and detail, cancellation, focus, retry, repeated taps, persistence, favorite cleanup, re-adding and small-screen confirmation.');
     return clientId;
   } finally { await browser.close(); }
 };

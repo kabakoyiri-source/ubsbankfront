@@ -15,6 +15,7 @@ import {
   FiLoader
 } from 'react-icons/fi'
 import api from '../services/api'
+import DeleteBeneficiaryDialog from '../components/DeleteBeneficiaryDialog'
 import './ClientDetail.css'
 
 function ClientDetail() {
@@ -24,6 +25,7 @@ function ClientDetail() {
   const [operations, setOperations] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     loadClient()
@@ -51,19 +53,6 @@ function ClientDetail() {
       }
     } catch (error) {
       console.error('Erreur lors du chargement des opérations:', error)
-    }
-  }
-
-  const handleDelete = async () => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce bénéficiaire ?')) {
-      return
-    }
-
-    try {
-      await api.delete(`/clients/${id}`)
-      navigate('/clients')
-    } catch (error) {
-      alert('Erreur lors de la suppression')
     }
   }
 
@@ -110,7 +99,10 @@ function ClientDetail() {
             <FiArrowRight size={18} />
             <span>Nouvelle opération</span>
           </Link>
-        
+          <button type="button" className="btn beneficiary-delete-btn" onClick={() => setDeleting(true)}>
+            <FiTrash2 size={18} aria-hidden="true" />
+            <span>Supprimer le bénéficiaire</span>
+          </button>
         </div>
       </div>
 
@@ -296,6 +288,9 @@ function ClientDetail() {
           </div>
         )}
       </div>
+      {deleting && <DeleteBeneficiaryDialog client={client} onCancel={() => setDeleting(false)} onDeleted={() => {
+        navigate('/clients', { replace: true, state: { beneficiaryDeleted: true } })
+      }} />}
     </div>
   )
 }

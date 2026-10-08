@@ -1,23 +1,28 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import DeleteBeneficiaryDialog from '../components/DeleteBeneficiaryDialog'
 import { 
   FiArrowRight, 
   FiSearch, 
   FiUsers, 
   FiLoader,
   FiArrowLeft,
-  FiStar
+  FiStar,
+  FiTrash2
 } from 'react-icons/fi'
 import './Clients.css'
 
 function Clients() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [clients, setClients] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [favorites, setFavorites] = useState(new Set())
+  const [deleting, setDeleting] = useState(null)
+  const [notice, setNotice] = useState(location.state?.beneficiaryDeleted ? 'Bénéficiaire supprimé.' : '')
 
   useEffect(() => {
     loadClients()
@@ -91,6 +96,7 @@ function Clients() {
       </div>
 
       {error && <div className="error-message" role="alert"><p>{error}</p><button type="button" className="btn btn-primary" onClick={loadClients}>Réessayer</button></div>}
+      {notice && <p className="beneficiary-notice" role="status">{notice}</p>}
 
       <div className="search-section">
         <div className="search-wrapper">
@@ -130,15 +136,17 @@ function Clients() {
         <div className="clients-grid">
           {filteredClients.map((client) => (
             <div key={client._id} className="client-card">
-              <div className="client-content">
+              <Link to={`/clients/${client._id}`} className="client-content">
                 <div className="client-name">
                   {client.firstName ? `${client.firstName} ` : ''}{client.lastName}
                 </div>
                 <div className="client-account-number">
                   {client.accountNumber}
                 </div>
-              </div>
+              </Link>
+              <div className="beneficiary-card-actions">
               <button
+                type="button"
                 className={`favorite-btn ${favorites.has(client._id) ? 'favorited' : ''}`}
                 onClick={(e) => {
                   e.stopPropagation()
@@ -148,10 +156,22 @@ function Clients() {
               >
                 <FiStar size={20} />
               </button>
+              <button type="button" className="beneficiary-delete-btn"
+                aria-label={`Supprimer ${[client.firstName, client.lastName].filter(Boolean).join(' ')}`}
+                onClick={() => { setNotice(''); setDeleting(client) }}>
+                <FiTrash2 size={20} aria-hidden="true" />
+              </button>
+              </div>
             </div>
           ))}
         </div>
       )}
+      {deleting && <DeleteBeneficiaryDialog client={deleting} onCancel={() => setDeleting(null)} onDeleted={client => {
+        setClients(previous => previous.filter(item => item._id !== client._id))
+        setFavorites(previous => new Set([...previous].filter(id => id !== client._id)))
+        setDeleting(null)
+        setNotice('Bénéficiaire supprimé.')
+      }} />}
     </div>
   )
 }

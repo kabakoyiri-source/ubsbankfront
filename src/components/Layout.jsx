@@ -38,7 +38,8 @@ function Layout({ children }) {
             <Link key={path} to={path}
               className={'app-nav-link ' + (section === itemSection ? 'active' : '')}
               aria-current={section === itemSection ? 'page' : undefined}>
-              <Icon size={23} aria-hidden="true" /><span>{label}</span>
+              <span className="app-nav-icon" aria-hidden="true"><Icon size={23} /></span>
+              <span className="app-nav-label">{label}</span>
             </Link>
           ))}
         </div>

@@ -73,7 +73,7 @@ html[data-platform="ios"][data-keyboard="open"] .layout { padding-bottom: 12px; 
 .screen-dashboard .notification-btn.has-recent { animation: none; }
 .screen-dashboard .notification-dot { top: 5px; right: 7px; width: 5px; height: 5px; }
 .screen-dashboard .home-label { font-size: 25px; line-height: 1.25; }
-.screen-dashboard .quick-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; border-radius: 16px; padding: 16px 12px; }
+.screen-dashboard .quick-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-radius: 16px; padding: 16px 0; }
 .screen-dashboard .quick-action-item { display: grid; grid-template-rows: 48px 32px; justify-items: center; align-items: start; gap: 8px; min-width: 0; }
 .screen-dashboard .quick-action-icon { width: 48px; height: 48px; border-radius: 12px; }
 .screen-dashboard .quick-action-label { max-width: none; font-size: 12px; line-height: 16px; }
@@ -91,7 +91,6 @@ html[data-platform="ios"][data-keyboard="open"] .layout { padding-bottom: 12px; 
 .screen-dashboard .favorite-left, .screen-dashboard .favorite-left > div { min-width: 0; }
 .screen-dashboard .favorite-left { align-items: center; gap: 12px; }
 .screen-dashboard .favorite-icon { display: grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; margin: 0; }
-.screen-dashboard .favorite-divider { margin-left: 40px; }
 .screen-dashboard .dashboard-error { background: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
 .screen-dashboard .dashboard-error p { margin-bottom: 12px; }
 .screen-dashboard .loading-container { min-height: 60vh; }

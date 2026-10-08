@@ -3,6 +3,8 @@ const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
 const sharp = require('sharp');
+const { checkSpacing } = require('./check-spacing.cjs');
+const { verifyBeneficiaryWebkit } = require('./verify-beneficiary-webkit.cjs');
 const root = path.resolve(__dirname, '..');
 process.env.PLAYWRIGHT_BROWSERS_PATH ||= path.join(root, 'qa', 'browsers');
 const { webkit, devices } = require('playwright');
@@ -43,7 +45,7 @@ async function main() {
   let count = 0;
   const mock = async context => context.route('**/api/**', route => {
     const url = new URL(route.request().url());
-    return route.fulfill({ json: url.pathname === '/api/auth/me' ? { success: true, user } : url.pathname === '/api/auth/login' ? { success: true, user, token: 'test-token' } : { success: true, data: url.pathname.startsWith('/api/clients') ? [client] : operations } });
+    return route.fulfill({ json: url.pathname === '/api/auth/me' ? { success: true, user } : url.pathname === '/api/auth/login' ? { success: true, user, token: 'test-token' } : { success: true, data: url.pathname === '/api/clients/test-client' ? client : url.pathname.startsWith('/api/clients') ? [client] : operations } });
   });
   try {
     const sizes = [
@@ -55,7 +57,7 @@ async function main() {
       { width: 440, height: 956, top: 62, bottom: 34 },
       { width: 844, height: 390, top: 0, bottom: 21, side: 47 },
     ];
-    const routes = ['/', '/accounts', '/cards', '/more', '/settings', '/clients', '/clients/new', '/operations/new', '/operations/transfer', '/balance/load', '/history'];
+    const routes = ['/', '/accounts', '/cards', '/more', '/settings', '/clients', '/clients/new', '/clients/test-client', '/operations/new', '/operations/transfer', '/balance/load', '/history'];
     for (const standalone of process.argv.includes('--behavior-only') ? [] : [false, true]) {
       const context = await browser.newContext({ ...devices['iPhone 13'], serviceWorkers: 'block' });
       await mock(context);
@@ -100,6 +102,7 @@ async function main() {
             };
           });
           count++;
+          await checkSpacing(page);
           assert.equal(metrics.platform, 'ios'); assert.equal(metrics.mode, standalone ? 'standalone' : 'browser');
           assert(metrics.scrollWidth <= metrics.width + 1, `Horizontal overflow: ${route} ${size.width}`);
           assert(metrics.height <= 71, `iPhone navigation too tall: ${JSON.stringify(metrics)}`);
@@ -115,6 +118,7 @@ async function main() {
 
     // Simulate OS chrome and keyboard viewport events, which headless WebKit
     // cannot open. Geometry still runs in WebKit, including focus and rotation.
+    await verifyBeneficiaryWebkit({ browser, base, device: devices['iPhone 13'], client, user, operations, sizes, qa });
     const context = await browser.newContext({ ...devices['iPhone 13'], viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
     await mock(context);
     await context.addInitScript(() => {

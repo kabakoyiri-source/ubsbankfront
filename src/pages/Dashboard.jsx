@@ -346,8 +346,9 @@ function Dashboard() {
       </div>
 
       {/* Favorites */}
-      <div className="favorites-section">
-        <div className="favorites-header">Favoris</div>
+      <section className="favorites-section" aria-labelledby="favorites-heading">
+        <h2 className="favorites-header" id="favorites-heading">Favoris</h2>
+        <div className="favorites-list">
 
         <div className="favorite-item">
           <div className="favorite-left">
@@ -360,11 +361,9 @@ function Dashboard() {
           <span className="favorite-arrow">›</span>
         </div>
 
-        <div className="favorite-divider"></div>
-
         <div className="favorite-item">
           <div className="favorite-left">
-            <span className="favorite-icon savings-icon">
+            <span className="favorite-icon">
               <FiLayers size={24} aria-hidden="true" />
             </span>
 
@@ -375,7 +374,8 @@ function Dashboard() {
           </div>
           <span className="favorite-arrow">›</span>
         </div>
-      </div>
+        </div>
+      </section>
 
       {/* Sidebar Menu */}
       <div className={`sidebar-overlay ${sidebarOpen ? 'active' : ''}`} onClick={() => setSidebarOpen(false)}></div>

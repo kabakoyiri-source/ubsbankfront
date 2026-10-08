@@ -475,14 +475,20 @@
   font-size: 15px;
   font-weight: 600;
   color: #444;
-  margin-bottom: 8px;
+  margin: 0 0 16px;
+}
+
+:where(.screen-dashboard) .favorites-list {
+  display: grid;
+  gap: 16px;
 }
 
 :where(.screen-dashboard) .favorite-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
+  padding: 0;
+  gap: 12px;
 }
 
 :where(.screen-dashboard) .favorite-left {
@@ -511,12 +517,6 @@
 :where(.screen-dashboard) .favorite-arrow {
   font-size: 22px;
   color: #bbb;
-}
-
-:where(.screen-dashboard) .favorite-divider {
-  height: 1px;
-  background: #eee;
-  margin-left: 28px;
 }
 
 :where(.screen-dashboard) .portfolio-svg {
@@ -610,20 +610,11 @@
 :where(.screen-dashboard) .favorite-item {
   display: flex;
   align-items: center;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--color-border);
   transition: background-color 0.3s ease;
-}
-
-:where(.screen-dashboard) .favorite-item:last-child {
-  border-bottom: none;
 }
 
 :where(.screen-dashboard) .favorite-item:hover {
   background: #f8f9fa;
-  margin: 0 -20px;
-  padding-left: 20px;
-  padding-right: 20px;
   border-radius: 8px;
 }
 
