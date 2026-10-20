@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { FiMail, FiLock, FiLogIn, FiUserPlus, FiAlertCircle } from 'react-icons/fi'
 import './Auth.css'
 import { getRememberedLogin, saveRememberedLogin, forgetRememberedLogin } from '../services/rememberedLogin'
+import { supabaseConfigurationError } from '../services/supabase'
 
 function Login() {
   const [email, setEmail] = useState('')
@@ -84,10 +85,10 @@ function Login() {
           <h2>Connexion e-banking</h2>
         </div>
 
-        {error && (
+        {(error || supabaseConfigurationError) && (
           <div className="error-message">
             <FiAlertCircle size={20} />
-            <span>{error}</span>
+            <span>{error || supabaseConfigurationError}</span>
           </div>
         )}
 

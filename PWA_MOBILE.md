@@ -16,7 +16,7 @@ La connexion propose « Mémoriser mes identifiants sur cet appareil », activé
 
 Cette option est réservée à un appareil personnel : une personne ayant accès à la PWA peut se reconnecter en appuyant sur le bouton. Le chiffrement local ne protège pas contre un script malveillant exécuté par le même site. Aucun identifiant n’est mémorisé si la connexion échoue. Si le navigateur ne permet pas le stockage, la connexion manuelle reste disponible. Référence de stockage des clés : [Web Cryptography, W3C](https://www.w3.org/TR/WebCryptoAPI/#concepts-key-storage).
 
-La session se termine dès que la page passe en arrière-plan (`visibilitychange`) ou est quittée (`pagehide`) : changement d’application ou d’onglet, fermeture, navigation hors du document et rechargement complet. La navigation entre les rubriques à l’intérieur de l’application garde la session. Le retour depuis le cache de navigation exige aussi une connexion. Le jeton et l’opération sélectionnée sont effacés immédiatement ; les identifiants chiffrés restent disponibles pour préremplir le formulaire. Une réponse de connexion ou de vérification arrivée après la sortie ne rétablit pas la session. Les autres fenêtres ouvertes reçoivent également la suppression du jeton. Cette action termine la session locale ; les JWT restent soumis à leur expiration côté serveur.
+La session se termine dès que la page passe en arrière-plan (`visibilitychange`) ou est quittée (`pagehide`) : changement d’application ou d’onglet, fermeture, navigation hors du document et rechargement complet. La navigation entre les rubriques à l’intérieur de l’application garde la session. Le retour depuis le cache de navigation exige aussi une connexion. Le jeton et l’opération sélectionnée sont effacés immédiatement ; les identifiants chiffrés restent disponibles pour préremplir le formulaire. Une réponse de connexion ou de vérification arrivée après la sortie ne rétablit pas la session. Les autres fenêtres ouvertes reçoivent également la suppression du jeton. La connexion passe désormais par `usb_users`, sans Supabase Auth. La sortie tente aussi de révoquer la session SQL avec une requête qui peut survivre à la fermeture. Si le système suspend le réseau, la connexion locale reste effacée et le jeton distant expire au plus tard après 12 heures.
 
 Le cache inclut les fichiers JavaScript et CSS produits par la compilation. Les requêtes API ne sont pas mises en cache. Une mise à jour attend l’action « Actualiser », sans interrompre automatiquement un formulaire ; cette action recharge la page et efface donc les saisies non enregistrées.
 
@@ -32,10 +32,10 @@ Le démarrage n’est marqué comme réussi qu’après le premier affichage Rea
 
 La compilation et le script `scripts/verify-mobile.cjs` vérifient 16 écrans sur six formats avec Chrome, les dimensions des icônes et leur zone de sécurité, les images de lancement, les marges système simulées, la déconnexion, les erreurs de connexion, la reprise après une panne, les fenêtres de confirmation en paysage, le cache hors ligne et l’activation d’une mise à jour. `scripts/verify-ios.cjs` vérifie 12 écrans sur sept formats avec WebKit, avec des profils Safari et application installée (168 pages). Il contrôle la navigation compacte, les cibles tactiles, l’accès aux derniers éléments, les changements de viewport/clavier, la rotation, le zoom et la nouvelle icône iOS. Les deux contrôles vérifient aussi la largeur identique des cinq choix, les centres des icônes, l’alignement des textes et les espacements des favoris. Le contrôle WebKit vérifie la confirmation de suppression d’un bénéficiaire, son annulation, une erreur suivie d’une nouvelle tentative et le retrait des choix de virement. Les insets système et les événements du clavier sont simulés : WebKit de bureau n’est pas un iPhone physique. Les données API sont simulées : aucune transaction réelle n’est créée.
 
-Pour relancer les contrôles :
+Pour relancer les contrôles (configuration Supabase locale simulée) :
 
 ```text
-npm run build
+npm run build:qa
 npm run verify:mobile
 npm run verify:ios
 npm run verify:pwa-recovery
@@ -52,7 +52,7 @@ npm run build
 
 ## Installation sur téléphone
 
-Publier la nouvelle compilation sur l’hébergement HTTPS habituel. Le site n’a pas été déployé par ces modifications locales. Si l’ancienne PWA conserve son icône, retirer son raccourci/application installée puis réinstaller depuis le site mis à jour. Fermer toutes les anciennes fenêtres permet aussi à l’ancien service worker de céder sa place.
+Importer le SQL dans Supabase et configurer le frontend selon [le guide de migration](supabase/README.md), puis refaire `npm run build` avec les vraies variables et publier le dossier `dist/`. Le site n’a pas été déployé par ces modifications locales. Si l’ancienne PWA conserve son icône, retirer son raccourci/application installée puis réinstaller depuis le site mis à jour. Fermer toutes les anciennes fenêtres permet aussi à l’ancien service worker de céder sa place.
 
 Les écrans natifs de lancement, le clavier et les zones système doivent encore être contrôlés sur un vrai Android et un vrai iPhone. Les vérifications automatisées utilisent Chrome avec des tailles d’écran et des marges simulées. Les cartes et la courbe de trading préexistantes restent des données de démonstration.
 

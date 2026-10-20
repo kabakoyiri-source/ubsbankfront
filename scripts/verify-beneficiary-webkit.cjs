@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const path = require('node:path');
+const { routeSupabase } = require('./supabase-route-fixture.cjs');
 
 exports.verifyBeneficiaryWebkit = async ({ browser, base, device, client, user, operations, sizes, qa }) => {
   for (const standalone of [false, true]) {
@@ -10,7 +11,7 @@ exports.verifyBeneficiaryWebkit = async ({ browser, base, device, client, user, 
       localStorage.setItem('token', 'test-token');
       Object.defineProperty(navigator, 'standalone', { value: standalone });
     }, standalone);
-    await context.route('**/api/**', route => {
+    await routeSupabase(context, route => {
       const url = new URL(route.request().url());
       if (url.pathname === '/api/auth/me') return route.fulfill({ json: { success: true, user } });
       if (route.request().method() === 'DELETE' && url.pathname === '/api/clients/' + client._id) {

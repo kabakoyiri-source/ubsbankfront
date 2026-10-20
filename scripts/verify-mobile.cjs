@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 const sharp = require('sharp');
 const { checkSpacing } = require('./check-spacing.cjs');
+const { routeSupabase } = require('./supabase-route-fixture.cjs');
 
 const root = path.resolve(__dirname, '..');
 const dist = path.join(root, 'dist');
@@ -34,7 +35,7 @@ const server = http.createServer((req, res) => {
 });
 
 async function mockApi(context, state = {}) {
-  await context.route('**/api/**', async route => {
+  await routeSupabase(context, async route => {
     const url = new URL(route.request().url());
     if (state.offline) return route.abort('internetdisconnected');
     if (state.expired && !['/api/auth/login', '/api/auth/register'].includes(url.pathname)) return route.fulfill({ status: 401, json: { success: false } });
@@ -350,7 +351,7 @@ async function main() {
     await pendingPage.goto(base + '/login');
     await pendingPage.getByLabel('Email', { exact: true }).fill('pending@example.test');
     await pendingPage.getByLabel('Mot de passe', { exact: true }).fill('pending-test-password');
-    const submitted = pendingPage.waitForRequest(request => request.url().endsWith('/api/auth/login'));
+    const submitted = pendingPage.waitForRequest(request => request.url().endsWith('/rest/v1/rpc/usb_login'));
     await pendingPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
     await submitted;
     await pendingPage.evaluate(() => {

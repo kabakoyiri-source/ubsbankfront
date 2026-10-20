@@ -2,8 +2,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium, devices } = require('playwright');
+const { routeSupabase } = require('./supabase-route-fixture.cjs');
 
-// Called by the backend verification, against its temporary MongoDB database.
+// Called by the Supabase UI verification against temporary PostgreSQL RPCs.
 exports.verifyFundsUi = async function verifyFundsUi(base, token) {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
@@ -13,8 +14,11 @@ exports.verifyFundsUi = async function verifyFundsUi(base, token) {
     let failCreation = true;
     let failRemoval = true;
     let removalRequests = 0;
-    await context.route('**/api/**', async route => {
+    await routeSupabase(context, async route => {
       const url = new URL(route.request().url());
+      // Geometry/persistence checks open independent authenticated documents.
+      // Exit revocation is exercised separately with real SQL sessions.
+      if (url.pathname === '/api/auth/logout') return route.fulfill({ json: { success: true } });
       if (url.pathname.startsWith('/api/clients/') && route.request().method() === 'DELETE') {
         removalRequests++;
         if (failRemoval) {

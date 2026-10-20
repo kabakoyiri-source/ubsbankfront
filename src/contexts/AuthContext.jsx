@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
 import api from '../services/api'
+import { revokeSession } from '../services/supabase'
 
 const AuthContext = createContext()
 
@@ -22,12 +23,14 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     // Synchronous storage removal also runs when iOS freezes the hidden app.
     authGeneration.current += 1
+    const token = localStorage.getItem('token')
     localStorage.removeItem('token')
     localStorage.removeItem('selectedOperation')
     setUser(null)
     setIsAuthenticated(false)
     setAuthCheckError(null)
     setLoading(false)
+    revokeSession(token)
   }, [])
 
   useEffect(() => {
@@ -41,11 +44,13 @@ export function AuthProvider({ children }) {
     window.addEventListener('pagehide', exited)
     window.addEventListener('pageshow', restored)
     window.addEventListener('storage', sessionRemoved)
+    window.addEventListener('usb-session-expired', exited)
     return () => {
       document.removeEventListener('visibilitychange', hidden)
       window.removeEventListener('pagehide', exited)
       window.removeEventListener('pageshow', restored)
       window.removeEventListener('storage', sessionRemoved)
+      window.removeEventListener('usb-session-expired', exited)
     }
   }, [])
 
@@ -78,7 +83,7 @@ export function AuthProvider({ children }) {
     try {
       setError(null)
       const response = await api.post('/auth/login', { email, password })
-      if (generation !== authGeneration.current || document.visibilityState === 'hidden') return { success: false, message: 'La page a été quittée. Appuyez sur « Se connecter » pour reprendre.' }
+      if (generation !== authGeneration.current || document.visibilityState === 'hidden') { revokeSession(response.data.token); return { success: false, message: 'La page a été quittée. Appuyez sur « Se connecter » pour reprendre.' } }
       if (response.data.success) {
         localStorage.setItem('token', response.data.token)
         setUser(response.data.user)
@@ -115,7 +120,7 @@ export function AuthProvider({ children }) {
         firstName,
         lastName
       })
-      if (generation !== authGeneration.current || document.visibilityState === 'hidden') return { success: false, message: 'La page a été quittée. Reconnectez-vous pour reprendre.' }
+      if (generation !== authGeneration.current || document.visibilityState === 'hidden') { revokeSession(response.data.token); return { success: false, message: 'La page a été quittée. Reconnectez-vous pour reprendre.' } }
       if (response.data.success) {
         localStorage.setItem('token', response.data.token)
         setUser(response.data.user)

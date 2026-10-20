@@ -13,6 +13,9 @@ node_modules/
 /dist
 
 # Misc
+.env
+/supabase/exports/
+/supabase/.temp/
 .DS_Store
 .env.local
 .env.development.local

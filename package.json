@@ -7,8 +7,8 @@
     "esbuild": true
   },
   "dependencies": {
+    "@supabase/postgrest-js": "^2.118.0",
     "@vitejs/plugin-react": "^4.2.1",
-    "axios": "^1.6.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.12.0",
@@ -18,12 +18,19 @@
   "scripts": {
     "dev": "vite --force",
     "build": "vite build",
+    "build:qa": "node scripts/build-qa.cjs",
     "preview": "vite preview",
     "verify:mobile": "node scripts/verify-mobile.cjs",
     "verify:ios": "node scripts/verify-ios.cjs",
-    "verify:pwa-recovery": "node scripts/verify-pwa-recovery.cjs"
+    "verify:pwa-recovery": "node scripts/verify-pwa-recovery.cjs",
+    "export:atlas": "node scripts/export-atlas.cjs",
+    "verify:supabase": "node scripts/verify-supabase.cjs",
+    "verify:supabase-ui": "node scripts/verify-supabase-ui.cjs"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.10",
+    "bcryptjs": "^3.0.3",
+    "mongodb": "^7.7.0",
     "playwright": "1.62.1",
     "sharp": "0.35.4"
   }

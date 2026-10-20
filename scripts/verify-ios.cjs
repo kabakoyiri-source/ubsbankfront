@@ -5,6 +5,7 @@ const path = require('node:path');
 const sharp = require('sharp');
 const { checkSpacing } = require('./check-spacing.cjs');
 const { verifyBeneficiaryWebkit } = require('./verify-beneficiary-webkit.cjs');
+const { routeSupabase } = require('./supabase-route-fixture.cjs');
 const root = path.resolve(__dirname, '..');
 process.env.PLAYWRIGHT_BROWSERS_PATH ||= path.join(root, 'qa', 'browsers');
 const { webkit, devices } = require('playwright');
@@ -43,7 +44,7 @@ async function main() {
   const browser = await webkit.launch({ headless: true });
   const errors = [];
   let count = 0;
-  const mock = async context => context.route('**/api/**', route => {
+  const mock = async context => routeSupabase(context, route => {
     const url = new URL(route.request().url());
     return route.fulfill({ json: url.pathname === '/api/auth/me' ? { success: true, user } : url.pathname === '/api/auth/login' ? { success: true, user, token: 'test-token' } : { success: true, data: url.pathname === '/api/clients/test-client' ? client : url.pathname.startsWith('/api/clients') ? [client] : operations } });
   });
