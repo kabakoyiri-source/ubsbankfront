@@ -74,7 +74,7 @@ function Operations() {
         setOperations(ops)
       }
     } catch (error) {
-      console.error('Erreur lors du chargement des opérations:', error)
+      console.error("Unable to load transactions:", error)
     } finally {
       setLoading(false)
     }
@@ -121,7 +121,7 @@ function Operations() {
       <div className="container">
         <div className="loading-container">
           <FiLoader className="spinner-icon" size={48} />
-          <p>Chargement des opérations...</p>
+          <p>Loading transactions...</p>
         </div>
       </div>
     )
@@ -134,15 +134,15 @@ function Operations() {
           <button 
             onClick={() => navigate('/')} 
             className="back-button"
-            aria-label="Retour"
+            aria-label="Back"
           >
             <FiArrowLeft size={20} />
           </button>
-          <h1>Liste des opérations</h1>
+          <h1>Transaction list</h1>
         </div>
         <Link to="/operations/new" className="btn btn-primary">
           <FiArrowRight size={18} />
-          <span>Nouvelle opération</span>
+          <span>New transaction</span>
         </Link>
       </div>
 
@@ -150,7 +150,7 @@ function Operations() {
         <div className="filters-header" onClick={() => setShowFilters(!showFilters)}>
           <div className="filters-title">
             <FiFilter size={20} />
-            <span>Filtres</span>
+            <span>Filters</span>
             {activeFiltersCount > 0 && (
               <span className="filter-badge">{activeFiltersCount}</span>
             )}
@@ -169,30 +169,30 @@ function Operations() {
         <div className={`filters-content ${showFilters ? 'filters-visible' : ''}`}>
           <div className="filters-grid">
               <div className="form-group">
-                <label>Type d'opération</label>
+                <label>Transaction type</label>
                 <select
                   value={filters.type}
                   onChange={(e) => handleFilterChange('type', e.target.value)}
                 >
-                  <option value="">Tous les types</option>
-                  <option value="deposit">Crédit (Dépôt)</option>
-                  <option value="withdrawal">Débit (Retrait)</option>
-                  <option value="transfer">Débit (Virement)</option>
-                  <option value="payment">Débit (Paiement)</option>
+                  <option value="">All types</option>
+                  <option value="deposit">Credit (deposit)</option>
+                  <option value="withdrawal">Debit (withdrawal)</option>
+                  <option value="transfer">Debit (transfer)</option>
+                  <option value="payment">Debit (payment)</option>
                 </select>
               </div>
 
               <div className="form-group">
-                <label>Statut</label>
+                <label>Status</label>
                 <select
                   value={filters.status}
                   onChange={(e) => handleFilterChange('status', e.target.value)}
                 >
-                  <option value="">Tous les statuts</option>
-                  <option value="pending">En attente</option>
-                  <option value="completed">Terminé</option>
-                  <option value="failed">Échoué</option>
-                  <option value="cancelled">Annulé</option>
+                  <option value="">All statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="completed">Completed</option>
+                  <option value="failed">Failed</option>
+                  <option value="cancelled">Cancelled</option>
                 </select>
               </div>
 
@@ -200,7 +200,7 @@ function Operations() {
                 <label>&nbsp;</label>
                 <button onClick={clearFilters} className="btn btn-secondary">
                   <FiX size={16} />
-                  <span>Réinitialiser</span>
+                  <span>Reset</span>
                 </button>
               </div>
             </div>

@@ -6,6 +6,7 @@ const sharp = require('sharp');
 const { checkSpacing } = require('./check-spacing.cjs');
 const { verifyBeneficiaryWebkit } = require('./verify-beneficiary-webkit.cjs');
 const { routeSupabase } = require('./supabase-route-fixture.cjs');
+const { checkEnglish } = require('./check-english.cjs');
 const root = path.resolve(__dirname, '..');
 process.env.PLAYWRIGHT_BROWSERS_PATH ||= path.join(root, 'qa', 'browsers');
 const { webkit, devices } = require('playwright');
@@ -104,6 +105,7 @@ async function main() {
           });
           count++;
           await checkSpacing(page);
+          await checkEnglish(page);
           assert.equal(metrics.platform, 'ios'); assert.equal(metrics.mode, standalone ? 'standalone' : 'browser');
           assert(metrics.scrollWidth <= metrics.width + 1, `Horizontal overflow: ${route} ${size.width}`);
           assert(metrics.height <= 71, `iPhone navigation too tall: ${JSON.stringify(metrics)}`);
@@ -163,8 +165,8 @@ async function main() {
     loginPage.on('pageerror', error => errors.push(error.message));
     await loginPage.goto(base + '/login');
     await loginPage.getByLabel('Email', { exact: true }).fill('iphone@example.test');
-    await loginPage.getByLabel('Mot de passe', { exact: true }).fill('test-password-ios');
-    await loginPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+    await loginPage.getByLabel("Password", { exact: true }).fill('test-password-ios');
+    await loginPage.getByRole('button', { name: "Log in", exact: true }).click();
     await loginPage.locator('.favorites-section').waitFor();
     await loginPage.evaluate(() => {
       Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
@@ -175,15 +177,15 @@ async function main() {
     await loginPage.waitForFunction(() => document.querySelector('#login-email') && !document.querySelector('#login-email').disabled);
     assert.equal(await loginPage.evaluate(() => localStorage.getItem('token')), null);
     assert.equal(await loginPage.getByLabel('Email', { exact: true }).inputValue(), 'iphone@example.test');
-    assert.equal(await loginPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-ios');
-    await loginPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+    assert.equal(await loginPage.getByLabel("Password", { exact: true }).inputValue(), 'test-password-ios');
+    await loginPage.getByRole('button', { name: "Log in", exact: true }).click();
     await loginPage.locator('.favorites-section').waitFor();
     await loginPage.close();
     loginPage = await loginContext.newPage();
     await loginPage.goto(base + '/accounts');
     await loginPage.waitForFunction(() => document.querySelector('#login-email') && !document.querySelector('#login-email').disabled);
     assert.equal(await loginPage.evaluate(() => localStorage.getItem('token')), null);
-    assert.equal(await loginPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-ios');
+    assert.equal(await loginPage.getByLabel("Password", { exact: true }).inputValue(), 'test-password-ios');
     await loginContext.close();
     assert.deepEqual(errors, []);
     fs.writeFileSync(path.join(qa, 'ios-verification.json'), JSON.stringify({ engine: 'WebKit', simulatedSystemInsets: true, count, errors, iconInkWidth: maxX - minX + 1 }, null, 2));

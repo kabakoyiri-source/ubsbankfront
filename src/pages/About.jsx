@@ -14,7 +14,7 @@ function About() {
           <button onClick={() => navigate('/more')} className="back-button">
             <FiArrowLeft size={20} />
           </button>
-          <h1>À propos</h1>
+          <h1>About</h1>
         </div>
       </div>
 
@@ -26,15 +26,13 @@ function About() {
         </div>
 
         <div className="about-section">
-          <h3>Mentions légales</h3>
+          <h3>Legal information</h3>
           <div className="legal-text">
             <p>
-              Cette application est la propriété exclusive de UBS Group AG.
-              L'accès et l'utilisation de cette application sont soumis aux conditions générales d'utilisation.
+              This application is the exclusive property of UBS Group AG. Access to and use of this application are subject to its terms and conditions.
             </p>
             <p>
-              UBS accorde une importance capitale à la sécurité de vos données.
-              Toutes les communications sont chiffrées de bout en bout.
+              UBS places great importance on the security of your data. All communications are encrypted end to end.
             </p>
           </div>
         </div>
@@ -45,8 +43,8 @@ function About() {
               <FiShield />
             </div>
             <div className="feature-text">
-              <h4>Sécurité Avancée</h4>
-              <p>Protection biométrique et chiffrement fort.</p>
+              <h4>Advanced security</h4>
+              <p>Biometric protection and strong encryption.</p>
             </div>
           </div>
           <div className="feature-item">
@@ -54,8 +52,8 @@ function About() {
               <FiSmartphone />
             </div>
             <div className="feature-text">
-              <h4>Expérience Mobile</h4>
-              <p>Optimisé pour tous vos appareils.</p>
+              <h4>Mobile experience</h4>
+              <p>Optimised for all your devices.</p>
             </div>
           </div>
           <div className="feature-item">
@@ -63,14 +61,14 @@ function About() {
               <FiGlobe />
             </div>
             <div className="feature-text">
-              <h4>Accès Global</h4>
-              <p>Gérez vos comptes partout dans le monde.</p>
+              <h4>Global access</h4>
+              <p>Manage your accounts anywhere in the world.</p>
             </div>
           </div>
         </div>
 
         <div className="footer-credits">
-          <p>© {currentYear} UBS Group AG. Tous droits réservés.</p>
+          <p>© {currentYear} UBS Group AG. All rights reserved.</p>
           <p>Made with ❤️ for high-end banking experience.</p>
         </div>
       </div>

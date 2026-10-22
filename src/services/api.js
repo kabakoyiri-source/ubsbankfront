@@ -1,6 +1,8 @@
 import { supabase, supabaseConfigurationError } from './supabase'
+import { toEnglishMessage, transactionInEnglish } from './messages'
 
 function requestError(message, status = 500) {
+  message = toEnglishMessage(message)
   return Object.assign(new Error(message), { response: { status, data: { success: false, message } } })
 }
 function errorStatus(error, fallback) {
@@ -12,8 +14,8 @@ function errorStatus(error, fallback) {
 async function rpc(name, payload) {
   if (!supabase) throw requestError(supabaseConfigurationError, 503)
   const { data, error, status } = await supabase.rpc(name, payload)
-  if (error) throw requestError(error.message || 'Impossible de joindre Supabase. Réessayez.', errorStatus(error, status))
-  if (!data?.success) throw requestError(data?.message || 'La demande a échoué.', data?.status || 500)
+  if (error) throw requestError(error.message || "Unable to reach Supabase. Try again.", errorStatus(error, status))
+  if (!data?.success) throw requestError(data?.message || "The request failed.", data?.status || 500)
   return { data }
 }
 
@@ -23,7 +25,7 @@ async function request(method, path, body = {}) {
   if (method === 'POST' && url.pathname === '/auth/login') return rpc('usb_login', { p_email: body.email, p_password: body.password })
   if (method === 'POST' && url.pathname === '/auth/register') return rpc('usb_register', { p_payload: body })
   const token = localStorage.getItem('token')
-  if (!token) throw requestError('Veuillez vous connecter.', 401)
+  if (!token) throw requestError("Please log in.", 401)
   let action
   const payload = { ...Object.fromEntries(url.searchParams), ...body }
   const segments = url.pathname.split('/').filter(Boolean)
@@ -40,9 +42,14 @@ async function request(method, path, body = {}) {
     else if (segments[1] === 'history') { action = 'operations.history'; payload.clientId = segments[2] }
     else action = segments[1] ? 'operations.get' : 'operations.list'
   }
-  if (!action) throw requestError('Action introuvable.', 404)
+  if (!action) throw requestError("Action not found.", 404)
   try {
-    return await rpc('usb_api', { p_action: action, p_payload: payload, p_session_token: token })
+    const response = await rpc('usb_api', { p_action: action, p_payload: payload, p_session_token: token })
+    if (action.startsWith('operations.') && response.data.data) {
+      response.data.data = Array.isArray(response.data.data)
+        ? response.data.data.map(transactionInEnglish) : transactionInEnglish(response.data.data)
+    }
+    return response
   } catch (error) {
     if (error.response?.status === 401) {
       localStorage.removeItem('token')

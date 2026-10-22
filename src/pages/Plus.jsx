@@ -17,45 +17,45 @@ function Plus() {
   const menuItems = [
     {
       icon: FiUser,
-      label: 'Profil',
-      description: 'Gérer vos informations personnelles',
+      label: "Profile",
+      description: "Manage your personal information",
       action: () => navigate('/profile')
     },
     {
       icon: FiSettings,
-      label: 'Paramètres',
-      description: 'Configurer l\'application',
+      label: "Settings",
+      description: "Configure the app",
       action: () => navigate('/settings')
     },
     {
       icon: FiBell,
       label: 'Notifications',
-      description: 'Gérer les alertes et notifications',
+      description: "Manage alerts and notifications",
     },
     {
       icon: FiLock,
-      label: 'Sécurité',
-      description: 'Mot de passe et authentification',
+      label: "Security",
+      description: "Password and authentication",
     },
     {
       icon: FiShield,
-      label: 'Confidentialité',
-      description: 'Gestion des données personnelles',
+      label: "Privacy",
+      description: "Manage personal data",
     },
     {
       icon: FiFileText,
       label: 'Documents',
-      description: 'Vos documents et contrats',
+      description: "Your documents and contracts",
     },
     {
       icon: FiHelpCircle,
-      label: 'Aide',
-      description: 'Centre d\'aide et support',
+      label: "Help",
+      description: "Help and support centre",
     },
     {
       icon: FiInfo,
-      label: 'À propos',
-      description: 'Informations sur l\'application',
+      label: "About",
+      description: "About the app",
       action: () => navigate('/about')
     }
   ];
@@ -67,11 +67,11 @@ function Plus() {
           <button 
             onClick={() => navigate('/')} 
             className="back-button"
-            aria-label="Retour"
+            aria-label="Back"
           >
             <FiArrowLeft size={20} />
           </button>
-          <h1>Plus</h1>
+          <h1>More</h1>
         </div>
       </div>
 
@@ -82,7 +82,7 @@ function Plus() {
               <FiUser size={32} />
             </div>
             <div className="user-info">
-              <h3>{user ? `${user.firstName || ''} ${user.lastName || ''}` : 'Utilisateur'}</h3>
+              <h3>{user ? `${user.firstName || ''} ${user.lastName || ''}` : "User"}</h3>
             </div>
           </div>
         </div>
@@ -103,7 +103,7 @@ function Plus() {
                   </div>
                   <div className="menu-item-content">
                     <span className="menu-item-label">{item.label}</span>
-                    <span className="menu-item-description">{item.action ? item.description : 'Bientôt disponible'}</span>
+                    <span className="menu-item-description">{item.action ? item.description : "Coming soon"}</span>
                   </div>
                   <div className="menu-item-arrow">
                     <FiChevronRight size={20} />
@@ -117,7 +117,7 @@ function Plus() {
         <div className="logout-section">
           <button className="logout-button" onClick={handleLogout}>
             <FiLogOut size={24} />
-            <span>Déconnexion</span>
+            <span>Log out</span>
           </button>
         </div>
       </div>

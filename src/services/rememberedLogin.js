@@ -8,14 +8,14 @@ const emptyLogin = () => ({ enabled: true, email: '', password: '' })
 function openDatabase() {
   return new Promise((resolve, reject) => {
     if (!globalThis.indexedDB || !globalThis.crypto?.subtle) {
-      reject(new Error('La mémorisation est indisponible dans ce navigateur.'))
+      reject(new Error("Saving credentials is unavailable in this browser."))
       return
     }
     const request = indexedDB.open(DATABASE, 1)
     request.onupgradeneeded = () => request.result.createObjectStore(STORE)
     request.onsuccess = () => resolve(request.result)
     request.onerror = () => reject(request.error)
-    request.onblocked = () => reject(new Error('Le stockage de cet appareil est bloqué.'))
+    request.onblocked = () => reject(new Error("Storage is blocked on this device."))
   })
 }
 
@@ -39,7 +39,7 @@ async function writeEntry(entry) {
       transaction.objectStore(STORE).put(entry, ENTRY)
       transaction.oncomplete = () => resolve()
       transaction.onerror = () => reject(transaction.error)
-      transaction.onabort = () => reject(transaction.error || new Error('Stockage interrompu.'))
+      transaction.onabort = () => reject(transaction.error || new Error("Storage interrupted."))
     })
   } finally { db.close() }
 }

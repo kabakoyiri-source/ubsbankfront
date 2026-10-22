@@ -31,30 +31,30 @@ function Accounts() {
   const accounts = [
     {
       id: 'chf',
-      name: 'Compte CHF',
+      name: "CHF account",
       rib: 'CH93 0076 2011 6238 5295 7',
-      type: 'Compte de transaction (CHF)',
+      type: "Transaction account (CHF)",
       icon: FiLayers,
       color: '#3b82f6',
-      description: 'Compte principal pour les transactions en Francs Suisses'
+      description: "Main account for Swiss franc transactions"
     },
     {
       id: 'eur',
-      name: 'Compte EUR',
+      name: "EUR account",
       rib: 'CH55 0023 5235 8890 1234 5',
-      type: 'Compte courant (EUR)',
+      type: "Current account (EUR)",
       icon: FiSave,
       color: '#10b981',
-      description: 'Compte pour les transactions en Euros'
+      description: "Account for euro transactions"
     },
     {
       id: 'usd',
-      name: 'Compte USD',
+      name: "USD account",
       rib: 'CH81 0024 1016 3852 9450 1',
-      type: 'Compte de réserve (USD)',
+      type: "Reserve account (USD)",
       icon: 'USD',
       color: '#f59e0b',
-      description: 'Compte pour les transactions en Dollars US'
+      description: "Account for US dollar transactions"
     }
   ]
 
@@ -72,8 +72,8 @@ function Accounts() {
         setAdminBalance(calculateBalances(operations))
       }
     } catch (error) {
-      console.error('Erreur lors du chargement du solde:', error)
-      setError('Impossible de charger les comptes. Vérifiez votre connexion puis réessayez.')
+      console.error("Unable to load the balance:", error)
+      setError("Unable to load accounts. Check your connection and try again.")
     } finally {
       setLoading(false)
     }
@@ -92,13 +92,13 @@ function Accounts() {
       <div className="accounts-container">
         <div className="loading-container">
           <FiLoader className="spinner-icon" size={48} />
-          <p>Chargement...</p>
+          <p>Loading...</p>
         </div>
       </div>
     )
   }
 
-  if (error) return <div className="error-message" role="alert"><span>{error}</span><button className="btn btn-primary" onClick={loadBalance}>Réessayer</button></div>
+  if (error) return <div className="error-message" role="alert"><span>{error}</span><button className="btn btn-primary" onClick={loadBalance}>Try again</button></div>
 
   return (
     <div className="accounts-container">
@@ -107,11 +107,11 @@ function Accounts() {
           <button 
             onClick={() => navigate('/')} 
             className="back-button"
-            aria-label="Retour"
+            aria-label="Back"
           >
             <FiArrowLeft size={20} />
           </button>
-          <h1>Mes Comptes</h1>
+          <h1>My accounts</h1>
         </div>
       </div>
 
@@ -136,7 +136,7 @@ function Accounts() {
                 <button 
                   className="eye-btn"
                   onClick={() => toggleBalance(account.id)}
-                  aria-label={showBalance ? "Masquer le solde" : "Afficher le solde"}
+                  aria-label={showBalance ? "Hide balance" : "Show balance"}
                 >
                   {showBalance ? <FiEyeOff size={18} /> : <FiEye size={18} />}
                 </button>
@@ -148,12 +148,12 @@ function Accounts() {
                 <p className="account-description">{account.description}</p>
 
                 <div className="account-iban-box">
-                  <label>RIB</label>
+                  <label>IBAN</label>
                   <div className="account-iban">{account.rib}</div>
                 </div>
 
                 <div className="account-balance-box">
-                  <label>Solde disponible</label>
+                  <label>Available balance</label>
                   <div className="account-balance" style={{ color: account.color }}>
                     {showBalance ? (
                       <>{account.id.toUpperCase()} {formatAmount(adminBalance[account.id] || 0)}</>

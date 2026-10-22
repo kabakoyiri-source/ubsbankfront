@@ -1,6 +1,8 @@
 # Ajout de fonds dans les paramètres
 
-Dans la PWA : **Plus → Paramètres → Ajouter des fonds**. Choisir CHF, EUR ou USD, saisir un montant positif avec deux décimales au maximum, puis appuyer sur « Ajouter les fonds ». Le projet utilise des fonds de démonstration : aucun prestataire de paiement ni réseau bancaire externe n’est connecté à cette action.
+Dans la PWA en anglais : **More → Settings → Add funds**. Choisir CHF, EUR ou USD, saisir un montant positif avec deux décimales au maximum, puis appuyer sur « Add funds ». Le projet utilise des fonds de démonstration : aucun prestataire de paiement ni réseau bancaire externe n’est connecté à cette action.
+
+La devise sélectionnée est conservée entre les paramètres, l’accueil, le rechargement et le formulaire de virement. Après un ajout en EUR ou USD, l’accueil affiche directement le solde de cette devise, y compris après rechargement. Le parcours **Top up** transmet aussi la devise dans les rechargements et les transferts manuels. Les montants affichent un point décimal (`1'234.50`) tout en acceptant une saisie avec virgule.
 
 L’ajout est enregistré comme un dépôt dans la base, puis apparaît dans les comptes, l’accueil et l’historique. Le lien « Effectuer un virement » conduit au formulaire des bénéficiaires enregistrés. Le formulaire affiche le solde disponible du compte source et propose un raccourci vers les paramètres.
 

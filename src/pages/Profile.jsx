@@ -22,7 +22,7 @@ function Profile() {
   const handleInitialSave = (e) => {
     e.preventDefault();
     if (!firstName.trim() || !lastName.trim()) {
-      setError('Veuillez remplir tous les champs');
+      setError("Complete all fields");
       return;
     }
     setError('');
@@ -43,7 +43,7 @@ function Profile() {
       });
 
       if (response.data.success) {
-        setSuccess('Profil mis à jour avec succès');
+        setSuccess("Profile updated successfully");
         setUser(response.data.user); // Update context
         setIsEditing(false);
         setShowPasswordModal(false);
@@ -53,7 +53,7 @@ function Profile() {
         setTimeout(() => setSuccess(''), 3000);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Erreur lors de la mise à jour');
+      setError(err.response?.data?.message || "Unable to update");
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ function Profile() {
           <button onClick={() => navigate('/more')} className="back-button">
             <FiArrowLeft size={20} />
           </button>
-          <h1>Mon Profil</h1>
+          <h1>My profile</h1>
         </div>
       </div>
 
@@ -76,7 +76,7 @@ function Profile() {
             <FiUser size={48} />
           </div>
           <h2>{user?.email}</h2>
-          <p className="account-type">Compte Particulier</p>
+          <p className="account-type">Personal account</p>
         </div>
 
         {error && (
@@ -95,7 +95,7 @@ function Profile() {
 
         <div className="profile-form-container">
           <div className="form-group">
-            <label>Prénom</label>
+            <label>First name</label>
             <input
               type="text"
               value={firstName}
@@ -106,7 +106,7 @@ function Profile() {
           </div>
 
           <div className="form-group">
-            <label>Nom</label>
+            <label>Last name</label>
             <input
               type="text"
               value={lastName}
@@ -121,7 +121,7 @@ function Profile() {
               className="btn btn-primary btn-block"
               onClick={() => setIsEditing(true)}
             >
-              Modifier mes informations
+              Edit my details
             </button>
           ) : (
             <div className="edit-actions">
@@ -134,13 +134,13 @@ function Profile() {
                   setError('');
                 }}
               >
-                Annuler
+                Cancel
               </button>
               <button 
                 className="btn btn-primary"
                 onClick={handleInitialSave}
               >
-                Enregistrer
+                Save
               </button>
             </div>
           )}
@@ -150,19 +150,19 @@ function Profile() {
       {showPasswordModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3>Sécurité</h3>
-            <p>Veuillez confirmer votre mot de passe pour enregistrer les modifications.</p>
+            <h3>Security</h3>
+            <p>Confirm your password to save these changes.</p>
             
             <form onSubmit={handleConfirmUpdate}>
               <div className="form-group">
-                <label>Mot de passe actuel</label>
+                <label>Current password</label>
                 <div className="password-input-wrapper">
                   <FiLock className="input-icon" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Votre mot de passe"
+                    placeholder="Your password"
                     autoFocus
                     required
                   />
@@ -179,14 +179,14 @@ function Profile() {
                   }}
                   disabled={loading}
                 >
-                  Annuler
+                  Cancel
                 </button>
                 <button 
                   type="submit" 
                   className="btn btn-primary"
                   disabled={loading}
                 >
-                  {loading ? 'Vérification...' : 'Confirmer'}
+                  {loading ? "Verifying..." : "Confirm"}
                 </button>
               </div>
             </form>

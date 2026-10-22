@@ -21,13 +21,13 @@ class ErrorBoundary extends React.Component {
   state = { hasError: false }
   componentDidMount() { window.__UBS_MARK_READY__?.() }
   static getDerivedStateFromError() { return { hasError: true } }
-  componentDidCatch(error, info) { console.error('Erreur de l’application', error, info) }
+  componentDidCatch(error, info) { console.error("Application error", error, info) }
   render() {
     if (this.state.hasError) return (
       <div className="app-error" role="alert">
-        <h1>Impossible d’afficher cette page</h1>
-        <p>Veuillez recharger l’application pour réessayer.</p>
-        <button className="btn btn-primary" onClick={() => window.location.reload()}>Recharger</button>
+        <h1>Unable to display this page</h1>
+        <p>Reload the app to try again.</p>
+        <button className="btn btn-primary" onClick={() => window.location.reload()}>Top up</button>
       </div>
     )
     return this.props.children

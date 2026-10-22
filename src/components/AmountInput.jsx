@@ -9,7 +9,7 @@ export default function AmountInput({ value, onValueChange, ...props }) {
     if (caret.current === null || document.activeElement !== input.current) return
     let index = 0, count = 0
     while (index < display.length && count < caret.current) {
-      if (/[\d,]/.test(display[index])) count++
+      if (/[\d.]/.test(display[index])) count++
       index++
     }
     input.current.setSelectionRange(index, index)

@@ -6,6 +6,7 @@ import AmountInput from '../components/AmountInput'
 import { formatAmount } from '../services/money'
 import { useAuth } from '../contexts/AuthContext'
 import './LoadBalance.css'
+import { getPreferredCurrency, setPreferredCurrency } from '../services/currency'
 
 function LoadBalance() {
   const navigate = useNavigate()
@@ -19,7 +20,7 @@ function LoadBalance() {
     recipientName: '',
     iban: '',
     reason: '',
-    currency: 'CHF'
+    currency: getPreferredCurrency()
   })
   
   // Mock Credit Card Data (Not sent to backend)
@@ -53,12 +54,13 @@ function LoadBalance() {
         setClients(clientsData)
       }
     } catch (error) {
-      console.error('Erreur lors du chargement des clients:', error)
+      console.error("Unable to load beneficiaries:", error)
     }
   }
 
   const handleChange = (e) => {
     const { name, value } = e.target
+    if (name === 'currency') setPreferredCurrency(value)
     setFormData({
       ...formData,
       [name]: value
@@ -135,26 +137,26 @@ function LoadBalance() {
 
     const amount = parseFloat(formData.amount)
     if (!amount || amount <= 0) {
-      setError('Veuillez entrer un montant valide')
+      setError("Enter a valid amount")
       return
     }
 
     if (operationType === 'deposit') {
       // Validate Mock Card Data
       if (!cardData.cardNumber || cardData.cardNumber.length < 19) {
-        setError('Veuillez entrer un numéro de carte valide')
+        setError("Enter a valid card number")
         return
       }
       if (!cardData.cardHolder) {
-        setError('Veuillez entrer le nom du titulaire')
+        setError("Enter the cardholder’s name")
         return
       }
       if (!cardData.expiryDate || cardData.expiryDate.length < 5) {
-        setError('Veuillez entrer une date d\'expiration valide (MM/YY)')
+        setError("Enter a valid expiry date (MM/YY)")
         return
       }
       if (!cardData.cvc || cardData.cvc.length < 3) {
-        setError('Veuillez entrer un CVC valide')
+        setError("Enter a valid CVC")
         return
       }
       // Show Security Modal
@@ -173,7 +175,7 @@ function LoadBalance() {
       setShowSecurityModal(false)
       await processTransaction()
     } else {
-      setSecurityError('Code de sécurité incorrect')
+      setSecurityError("Incorrect security code")
     }
   }
 
@@ -189,23 +191,23 @@ function LoadBalance() {
           type: 'deposit',
           amount: amount,
           currency: formData.currency,
-          reason: formData.reason || 'Rechargement de solde',
+          reason: formData.reason || "Balance top-up",
           // Note: Card data is intentionally NOT sent to backend
         }
       } else {
         // Validation spécifique au transfert
         if (!formData.clientId && !formData.recipientName.trim()) {
-          setError('Veuillez sélectionner un client existant ou entrer le nom du destinataire')
+          setError("Select an existing beneficiary or enter the recipient’s name")
           setLoading(false)
           return
         }
         if (!formData.clientId && !formData.iban.trim()) {
-          setError('Veuillez entrer l\'IBAN du destinataire')
+          setError("Enter the recipient’s IBAN")
           setLoading(false)
           return
         }
         if (!formData.reason.trim()) {
-          setError('Veuillez entrer le motif du transfert')
+          setError("Enter a transfer reference")
           setLoading(false)
           return
         }
@@ -213,7 +215,8 @@ function LoadBalance() {
         payload = {
           type: 'deposit',
           amount: amount,
-          description: formData.description || 'Transfert manuel',
+          description: formData.description || "Manual transfer",
+          currency: formData.currency,
           ...(formData.clientId && { clientId: formData.clientId }),
           recipientName: formData.recipientName,
           iban: formData.iban,
@@ -221,21 +224,23 @@ function LoadBalance() {
         }
       }
       
-      console.log('Payload envoyé:', payload)
+      console.log("Payload sent:", payload)
       
       const response = await api.post('/operations', payload)
 
       if (response.data.success) {
+        setPreferredCurrency(formData.currency)
+        if (response.data.balances) setUser(previous => previous ? { ...previous, balances: response.data.balances } : previous)
         const successMessage = operationType === 'deposit' 
-          ? 'Solde chargé avec succès' 
-          : 'Transfert effectué avec succès'
-        navigate('/', { state: { message: successMessage } })
+          ? "Balance topped up successfully"
+          : "Transfer completed successfully"
+        navigate('/', { state: { message: successMessage, currency: formData.currency } })
       }
     } catch (err) {
-      console.error('Erreur transaction:', err)
+      console.error("Transaction error:", err)
       setError(
         err.response?.data?.message || 
-        'Une erreur est survenue lors de la transaction'
+        "An error occurred during the transaction"
       )
     } finally {
       setLoading(false)
@@ -249,12 +254,12 @@ function LoadBalance() {
           <button
             onClick={() => navigate('/')}
             className="back-button"
-            aria-label="Retour"
+            aria-label="Back"
           >
             <FiArrowLeft size={20} />
           </button>
           <div className="header-content">
-            <h1>{operationType === 'deposit' ? 'Charger mon solde' : 'Effectuer un transfert'}</h1>
+            <h1>{operationType === 'deposit' ? "Top up my balance" : "Make a transfer"}</h1>
           </div>
         </div>
       </div>
@@ -267,21 +272,21 @@ function LoadBalance() {
 
       <form onSubmit={handleInitialSubmit} className="load-balance-form">
         <div className="operation-type-selector">
-          <h3>Type d'opération</h3>
+          <h3>Transaction type</h3>
           <div className="type-buttons">
             <button
               type="button"
               className={`type-btn ${operationType === 'deposit' ? 'active' : ''}`}
               onClick={() => handleOperationTypeChange('deposit')}
             >
-              Charger le solde
+              Top up balance
             </button>
             <button
               type="button"
               className={`type-btn ${operationType === 'transfer' ? 'active' : ''}`}
               onClick={() => handleOperationTypeChange('transfer')}
             >
-              Transfert manuel
+              Manual transfer
             </button>
           </div>
         </div>
@@ -295,13 +300,13 @@ function LoadBalance() {
           }}>
             <h2 style={{ margin: 0 }}>
               {operationType === 'deposit' 
-                ? 'Informations de rechargement' 
-                : 'Informations de transfert'}
+                ? "Top-up details"
+                : "Transfer details"}
             </h2>
           </div>
 
           <div className="form-group" style={{ marginTop: '20px' }}>
-            <label htmlFor="currency">Devise <span className="required">*</span></label>
+            <label htmlFor="currency">Currency <span className="required">*</span></label>
             <select
               id="currency"
               name="currency"
@@ -309,22 +314,22 @@ function LoadBalance() {
               onChange={handleChange}
               required
             >
-              <option value="CHF">Franc Suisse (CHF)</option>
+              <option value="CHF">Swiss franc (CHF)</option>
               <option value="EUR">Euro (EUR)</option>
-              <option value="USD">Dollar US (USD)</option>
+              <option value="USD">US dollar (USD)</option>
             </select>
           </div>
 
           <div className="form-group">
             <label htmlFor="amount">
-              Montant <span className="required">*</span>
+              Amount <span className="required">*</span>
             </label>
             <AmountInput
               id="amount"
               name="amount"
               value={formData.amount}
               onValueChange={amount => { setFormData(previous => ({ ...previous, amount })); setError('') }}
-              placeholder="0,00"
+              placeholder="0.00"
               required
             />
           </div>
@@ -332,20 +337,20 @@ function LoadBalance() {
           {/* Credit Card Fields for Deposit */}
           {operationType === 'deposit' && (
             <div className="credit-card-section">
-              <h3 className="subsection-title">Carte de Paiement</h3>
+              <h3 className="subsection-title">Payment card</h3>
               <div className="form-group">
-                <label>Nom du titulaire</label>
+                <label>Cardholder name</label>
                 <input
                   type="text"
                   name="cardHolder"
                   value={cardData.cardHolder}
                   onChange={handleCardChange}
-                  placeholder="NOM PRENOM"
+                  placeholder="FULL NAME"
                   required
                 />
               </div>
               <div className="form-group">
-                <label>Numéro de carte</label>
+                <label>Card number</label>
                 <input
                   type="text"
                   name="cardNumber"
@@ -358,7 +363,7 @@ function LoadBalance() {
               </div>
               <div className="form-row">
                 <div className="form-group half">
-                  <label>Date d'exp.</label>
+                  <label>Expiry date</label>
                   <input
                     type="text"
                     name="expiryDate"
@@ -389,19 +394,19 @@ function LoadBalance() {
           {operationType === 'transfer' && (
             <>
               <div className="form-group">
-                <label htmlFor="clientId">Bénéficiaire (optionnel)</label>
+                <label htmlFor="clientId">Beneficiary (optional)</label>
                 <select
                   id="clientId"
                   name="clientId"
                   value={formData.clientId}
                   onChange={handleChange}
                 >
-                  <option value="">Sélectionner un client existant...</option>
+                  <option value="">Select an existing beneficiary...</option>
                   {clients.map(client => (
                     <option key={client._id} value={client._id}>
                       {client.firstName && client.lastName 
                         ? `${client.firstName} ${client.lastName}`
-                        : client.lastName || 'Client sans nom'
+                        : client.lastName || "Unnamed beneficiary"
                       }
                     </option>
                   ))}
@@ -409,14 +414,14 @@ function LoadBalance() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="recipientName">Nom du destinataire</label>
+                <label htmlFor="recipientName">Recipient name</label>
                 <input
                   type="text"
                   id="recipientName"
                   name="recipientName"
                   value={formData.recipientName}
                   onChange={handleChange}
-                  placeholder="Entrez le nom"
+                  placeholder="Enter the last name"
                   required={!formData.clientId}
                   disabled={!!formData.clientId}
                 />
@@ -437,13 +442,13 @@ function LoadBalance() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="reason">Motif</label>
+                <label htmlFor="reason">Reference</label>
                 <textarea
                   id="reason"
                   name="reason"
                   value={formData.reason}
                   onChange={handleChange}
-                  placeholder="Motif..."
+                  placeholder="Reference..."
                   required
                 />
               </div>
@@ -458,7 +463,7 @@ function LoadBalance() {
             className="btn btn-secondary"
           >
             <FiX size={18} />
-            <span>Annuler</span>
+            <span>Cancel</span>
           </button>
           <button 
             type="submit" 
@@ -467,7 +472,7 @@ function LoadBalance() {
           >
             <FiSave size={18} />
             <span>
-              {loading ? 'Traitement...' : (operationType === 'deposit' ? 'Charger le solde' : 'Transférer')}
+              {loading ? "Processing..." : (operationType === 'deposit' ? "Top up balance" : "Transfer")}
             </span>
           </button>
         </div>
@@ -478,18 +483,18 @@ function LoadBalance() {
         <div className="modal-overlay">
           <div className="modal-content security-modal">
             <div className="modal-header">
-              <h3>Vérification Sécurité</h3>
-              <p>Veuillez entrer le code de confirmation reçu par SMS pour valider la transaction de <strong>{formData.currency} {formatAmount(Number(formData.amount))}</strong>.</p>
+              <h3>Security verification</h3>
+              <p>Enter the confirmation code received by SMS to approve the transaction of <strong>{formData.currency} {formatAmount(Number(formData.amount))}</strong>.</p>
             </div>
             
             <form onSubmit={handleVerifyCode}>
               <div className="form-group">
-                <label>Code de sécurité</label>
+                <label>Security code</label>
                 <input
                   type="text"
                   value={securityCode}
                   onChange={(e) => setSecurityCode(e.target.value)}
-                  placeholder="Entrez le code de sécurité"
+                  placeholder="Enter the security code"
                   autoFocus
                   className="security-input"
                 />
@@ -503,13 +508,13 @@ function LoadBalance() {
                   className="btn btn-secondary"
                   onClick={() => setShowSecurityModal(false)}
                 >
-                  Annuler
+                  Cancel
                 </button>
                 <button 
                   type="submit" 
                   className="btn btn-primary"
                 >
-                  Confirmer le paiement
+                  Confirm payment
                 </button>
               </div>
             </form>

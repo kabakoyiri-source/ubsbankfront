@@ -28,7 +28,7 @@ const server = http.createServer((req, res) => {
   }
   if (pathname === '/' || pathname === '/index.html' || !path.extname(pathname)) {
     res.setHeader('Content-Type', 'text/html');
-    return res.end(version === 'legacy' ? legacyHtml : freshHtml ? html.replace('<html lang="fr">', '<html lang="fr" data-network-fresh="true">') : html);
+    return res.end(version === 'legacy' ? legacyHtml : freshHtml ? html.replace('<html lang="en">', '<html lang="en" data-network-fresh="true">') : html);
   }
   if (pathname.endsWith('.js') && version === 'invalid') {
     res.setHeader('Content-Type', 'text/html');
@@ -96,7 +96,7 @@ async function main() {
     assert.equal(await page.locator('#root').innerHTML(), '');
     version = 'current';
     await page.evaluate(async () => (await navigator.serviceWorker.getRegistration()).update());
-    await page.getByRole('button', { name: 'Se connecter', exact: true }).waitFor();
+    await page.getByRole('button', { name: "Log in", exact: true }).waitFor();
     await page.waitForFunction(() => document.querySelector('input[name="username"]')?.value === 'recovery@example.test');
     assert.equal(await page.locator('input[name="password"]').inputValue(), 'test-recovery-password');
     const keys = await page.evaluate(() => caches.keys());
@@ -106,14 +106,14 @@ async function main() {
     assert(await page.locator('#root').isVisible());
     freshHtml = true;
     await page.goto(base);
-    await page.getByRole('button', { name: 'Se connecter', exact: true }).waitFor();
+    await page.getByRole('button', { name: "Log in", exact: true }).waitFor();
     assert.equal(await page.locator('html').getAttribute('data-network-fresh'), null, 'Normal navigation must use the cached matching build');
     await page.goto(base + '/?pwa-repair=1');
-    await page.getByRole('button', { name: 'Se connecter', exact: true }).waitFor();
+    await page.getByRole('button', { name: "Log in", exact: true }).waitFor();
     assert.equal(await page.locator('html').getAttribute('data-network-fresh'), 'true', 'Repair navigation must bypass the active cached shell');
     await context.setOffline(true);
     await page.goto(base + '/?pwa-repair=offline');
-    await page.getByRole('button', { name: 'Se connecter', exact: true }).waitFor();
+    await page.getByRole('button', { name: "Log in", exact: true }).waitFor();
     assert.equal(await page.locator('html').getAttribute('data-network-fresh'), null, 'Offline repair URL must retain the cached shell');
     freshHtml = false;
     await context.close();
@@ -125,9 +125,9 @@ async function main() {
     await lateContext.route('**/assets/*.js', async route => { await gate; await route.continue(); });
     const latePage = await lateContext.newPage();
     await latePage.goto(base, { waitUntil: 'commit' });
-    await latePage.getByRole('button', { name: 'Réparer et recharger' }).waitFor();
+    await latePage.getByRole('button', { name: "Repair and reload" }).waitFor();
     release();
-    await latePage.getByRole('button', { name: 'Se connecter', exact: true }).waitFor();
+    await latePage.getByRole('button', { name: "Log in", exact: true }).waitFor();
     assert(await latePage.locator('#root').isVisible(), 'Late successful startup must unhide React');
     assert(!await latePage.locator('#startup-recovery').isVisible());
     await lateContext.close();
@@ -137,7 +137,7 @@ async function main() {
     await cssContext.route('**/assets/*.css', route => route.fulfill({ contentType: 'text/html', body: '<!doctype html>Wrong asset' }));
     const cssPage = await cssContext.newPage();
     await cssPage.goto(base);
-    await cssPage.getByRole('button', { name: 'Réparer et recharger' }).waitFor();
+    await cssPage.getByRole('button', { name: "Repair and reload" }).waitFor();
     assert(!await cssPage.locator('#root').isVisible());
     await cssContext.close();
     console.log('PASS: Android legacy blank page migrates automatically; invalid updates preserve caches; encrypted credentials retained; late JS and missing CSS recovery.');

@@ -2,9 +2,11 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
-const { chromium, devices } = require('playwright');
+process.env.PLAYWRIGHT_BROWSERS_PATH ||= path.resolve(__dirname, '../qa/browsers');
+const { chromium, webkit, devices } = require('playwright');
 const { createDatabase } = require('./supabase-test-db.cjs');
 const { verifyFundsUi } = require('./verify-funds-ui.cjs');
+const { verifyCurrenciesUi } = require('./verify-currencies-ui.cjs');
 
 async function main() {
   const { db, rpc } = await createDatabase();
@@ -37,6 +39,12 @@ async function main() {
     assert.deepEqual(profile.user.balances,{CHF:75.25,EUR:20,USD:0});
     const client=(await db.query('select * from public.usb_beneficiaries where id=$1',[clientId])).rows[0];
     assert.equal(Number(client.balance),25.25);assert(client.deleted_at);
+    for (const [engine, browserType, device] of [['Chrome',chromium,devices['Pixel 7']], ['WebKit',webkit,devices['iPhone 13']]]) {
+      const registered = await rpc('usb_register', { p_payload: { email: `currencies-${engine.toLowerCase()}@example.test`, password: 'local-test-password', firstName: 'Currency', lastName: 'Test' } });
+      const expected = await verifyCurrenciesUi({ base, token: registered.token, browserType, device, engine });
+      const actual = await rpc('usb_api', { p_action: 'profile.get', p_session_token: registered.token });
+      for (const code of ['CHF','EUR','USD']) assert.equal(actual.user.balances[code], Math.round(expected[code] * 100) / 100);
+    }
 
     const browser=await chromium.launch({channel:'chrome',headless:true});
     try {
@@ -50,8 +58,8 @@ async function main() {
       page.on('pageerror',error=>errors.push(error.message));
       await page.goto(base+'/login');
       await page.getByLabel('Email',{exact:true}).fill('mobile@example.test');
-      await page.getByLabel('Mot de passe',{exact:true}).fill('local-test-password');
-      await page.getByRole('button',{name:'Se connecter',exact:true}).click();
+      await page.getByLabel("Password",{exact:true}).fill('local-test-password');
+      await page.getByRole('button',{name:"Log in",exact:true}).click();
       await page.locator('.favorites-section').waitFor();
       const session=await page.evaluate(()=>localStorage.getItem('token'));
       assert.match(session,/^[a-f0-9]{64}$/);
@@ -61,11 +69,11 @@ async function main() {
         Object.defineProperty(document,'visibilityState',{configurable:true,value:'visible'});
         window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
       });
-      await page.getByRole('button',{name:'Se connecter',exact:true}).waitFor();
+      await page.getByRole('button',{name:"Log in",exact:true}).waitFor();
       assert.equal(await page.evaluate(()=>localStorage.getItem('token')),null);
       await page.waitForFunction(()=>document.querySelector('#login-email')&&!document.querySelector('#login-email').disabled);
       assert.equal(await page.getByLabel('Email',{exact:true}).inputValue(),'mobile@example.test');
-      assert.equal(await page.getByLabel('Mot de passe',{exact:true}).inputValue(),'local-test-password');
+      assert.equal(await page.getByLabel("Password",{exact:true}).inputValue(),'local-test-password');
       for(let i=0;i<40;i++) {
         try {await rpc('usb_api',{p_action:'profile.get',p_session_token:session});}
         catch(error){if(error.code==='PT401')break;throw error;}
@@ -74,7 +82,7 @@ async function main() {
       await assert.rejects(rpc('usb_api',{p_action:'profile.get',p_session_token:session}),error=>error.code==='PT401');
       await page.goto(base+'/register');
       for(const [name,value] of Object.entries({firstName:'New',lastName:'Test',email:'new@example.test',password:'new-test-password',confirmPassword:'new-test-password'})) await page.locator(`input[name="${name}"]`).fill(value);
-      await page.getByRole('button',{name:"S'inscrire",exact:true}).click();
+      await page.getByRole('button',{name:"Sign up",exact:true}).click();
       await page.locator('.favorites-section').waitFor();
       assert.equal((await db.query("select count(*)::int as n from public.usb_users where email='new@example.test'")).rows[0].n,1);
       assert.deepEqual(errors,[]);

@@ -6,14 +6,15 @@ const { chromium } = require('playwright');
 const sharp = require('sharp');
 const { checkSpacing } = require('./check-spacing.cjs');
 const { routeSupabase } = require('./supabase-route-fixture.cjs');
+const { checkEnglish } = require('./check-english.cjs');
 
 const root = path.resolve(__dirname, '..');
 const dist = path.join(root, 'dist');
 const qa = path.join(root, 'qa');
 fs.mkdirSync(qa, { recursive: true });
 const user = { id: 'test-admin', firstName: 'Jean', lastName: 'Dupont', email: 'test@example.test', role: 'admin', balance: 5000 };
-const client = { _id: 'test-client', firstName: 'Marie', lastName: 'Martin', email: 'marie@example.test', phone: '+41 00 000 00 00', accountNumber: 'CH93 0076 2011 6238 5295 7', bankName: 'Banque de démonstration', bankAddress: 'Rue de la Paix', status: 'active', balance: 1234, currency: 'CHF', createdAt: new Date().toISOString() };
-const operations = [{ _id: 'test-operation', type: 'deposit', amount: 1234567.89, currency: 'CHF', status: 'completed', clientId: client, description: 'Opération de démonstration', createdAt: new Date().toISOString(), sourceAccount: 'chf' }];
+const client = { _id: 'test-client', firstName: 'Marie', lastName: 'Martin', email: 'marie@example.test', phone: '+41 00 000 00 00', accountNumber: 'CH93 0076 2011 6238 5295 7', bankName: "Demo bank", bankAddress: "Test street", status: 'active', balance: 1234, currency: 'CHF', createdAt: new Date().toISOString() };
+const operations = [{ _id: 'test-operation', type: 'deposit', amount: 1234567.89, currency: 'CHF', status: 'completed', clientId: client, description: "Demo transaction", createdAt: new Date().toISOString(), sourceAccount: 'chf' }];
 let updateVersion = false;
 const assetFiles = fs.readdirSync(path.join(dist, 'assets')).filter(file => /\.(js|css)$/.test(file));
 const renameAssets = html => assetFiles.reduce((content, file) => content.replaceAll('/assets/' + file, '/assets/updated-' + file), html);
@@ -48,7 +49,7 @@ async function mockApi(context, state = {}) {
     if (url.pathname === '/api/auth/login') {
       if (state.waitLogin) await state.waitLogin;
       if (state.acceptLogin) return route.fulfill({ json: { success: true, token: 'test-token', user } });
-      return route.fulfill({ status: 401, json: { success: false, message: 'Identifiants incorrects' } });
+      return route.fulfill({ status: 401, json: { success: false, message: "Incorrect credentials" } });
     }
     const data = url.pathname === '/api/clients/test-client' ? client : url.pathname.startsWith('/api/clients') ? [client] : operations;
     return route.fulfill({ json: { success: true, data } });
@@ -131,6 +132,7 @@ async function main() {
         assert.equal(metrics.activeCount, 1);
         assert(Math.abs(metrics.navBottom - metrics.height) <= 1);
         await checkSpacing(page);
+        await checkEnglish(page);
         if (viewport.width === 390 && ['/', '/cards', '/operations/new'].includes(route)) {
           await page.screenshot({ path: path.join(qa, route === '/' ? 'home-mobile.png' : route === '/cards' ? 'cards-mobile.png' : 'payments-mobile.png'), fullPage: true });
         }
@@ -188,41 +190,41 @@ async function main() {
     await amountInput.fill('583936926972');
     assert.equal(await amountInput.inputValue(), "583'936'926'972");
     await amountInput.fill("1'234'567,89");
-    assert.equal(await amountInput.inputValue(), "1'234'567,89");
+    assert.equal(await amountInput.inputValue(), "1'234'567.89");
     await amountInput.fill('1234.56');
     await amountInput.evaluate(input => input.setSelectionRange(3, 3));
     await amountInput.pressSequentially('9');
-    assert.equal(await amountInput.inputValue(), "12'934,56");
+    assert.equal(await amountInput.inputValue(), "12'934.56");
     await amountInput.press('Backspace');
-    assert.equal(await amountInput.inputValue(), "1'234,56");
+    assert.equal(await amountInput.inputValue(), "1'234.56");
     await page.setViewportSize({ width: 844, height: 390 });
     await page.locator('select[name="clientId"]').selectOption('test-client');
     await page.locator('input[name="amount"]').fill('123');
-    await page.getByRole('button', { name: 'Continuer', exact: true }).click();
+    await page.getByRole('button', { name: "Continue", exact: true }).click();
     await page.locator('.confirmation-modal').waitFor();
-    await page.getByRole('button', { name: 'Confirmer le virement' }).scrollIntoViewIfNeeded();
-    const confirmationVisible = await page.getByRole('button', { name: 'Confirmer le virement' }).evaluate(button => {
+    await page.getByRole('button', { name: "Confirm transfer" }).scrollIntoViewIfNeeded();
+    const confirmationVisible = await page.getByRole('button', { name: "Confirm transfer" }).evaluate(button => {
       const r = button.getBoundingClientRect();
       return button.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2));
     });
     assert(confirmationVisible, 'Confirmation action hidden behind bottom navigation');
-    await page.locator('.confirmation-modal').getByRole('button', { name: 'Annuler', exact: true }).click();
+    await page.locator('.confirmation-modal').getByRole('button', { name: "Cancel", exact: true }).click();
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(base);
     await page.locator('.favorites-section').waitFor();
-    await page.getByRole('button', { name: 'Ouvrir le menu' }).first().click();
+    await page.getByRole('button', { name: "Open menu" }).first().click();
     await page.locator('.sidebar-menu.open').waitFor();
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('.sidebar-menu.open').count(), 0);
-    await page.getByRole('button', { name: 'Ouvrir le menu' }).first().click();
-    await page.getByRole('button', { name: 'Déconnexion' }).click();
-    await page.getByRole('button', { name: 'Se connecter' }).waitFor();
+    await page.getByRole('button', { name: "Open menu" }).first().click();
+    await page.getByRole('button', { name: "Log out" }).click();
+    await page.getByRole('button', { name: "Log in" }).waitFor();
     assert.equal(await page.evaluate(() => localStorage.getItem('token')), null);
     assert.equal(await page.evaluate(() => localStorage.getItem('selectedOperation')), null);
     await page.getByLabel('Email', { exact: true }).fill('wrong@example.test');
-    await page.getByLabel('Mot de passe', { exact: true }).fill('incorrect');
-    await page.getByRole('button', { name: 'Se connecter' }).click();
-    await page.getByText('Identifiants incorrects').waitFor();
+    await page.getByLabel("Password", { exact: true }).fill('incorrect');
+    await page.getByRole('button', { name: "Log in" }).click();
+    await page.getByText("Incorrect credentials").waitFor();
     assert.equal(await page.getByLabel('Email', { exact: true }).inputValue(), 'wrong@example.test');
     await page.screenshot({ path: path.join(qa, 'login-mobile.png'), fullPage: true });
     await context.close();
@@ -235,13 +237,13 @@ async function main() {
     memoryPage.on('pageerror', error => errors.push(error.message));
     const submitLogin = async (email, password) => {
       await memoryPage.getByLabel('Email', { exact: true }).fill(email);
-      await memoryPage.getByLabel('Mot de passe', { exact: true }).fill(password);
-      await memoryPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+      await memoryPage.getByLabel("Password", { exact: true }).fill(password);
+      await memoryPage.getByRole('button', { name: "Log in", exact: true }).click();
     };
     const logout = async () => {
-      await memoryPage.getByRole('button', { name: 'Ouvrir le menu' }).first().click();
-      await memoryPage.getByRole('button', { name: 'Déconnexion', exact: true }).click();
-      await memoryPage.getByRole('button', { name: 'Se connecter', exact: true }).waitFor();
+      await memoryPage.getByRole('button', { name: "Open menu" }).first().click();
+      await memoryPage.getByRole('button', { name: "Log out", exact: true }).click();
+      await memoryPage.getByRole('button', { name: "Log in", exact: true }).waitFor();
       await memoryPage.waitForFunction(() => !document.querySelector('#login-email').disabled);
     };
     const inspectRemembered = () => memoryPage.evaluate(() => new Promise((resolve, reject) => {
@@ -259,7 +261,7 @@ async function main() {
     }));
     await memoryPage.goto(base + '/login');
     await submitLogin('wrong@example.test', 'wrong-test-password');
-    await memoryPage.getByText('Identifiants incorrects').waitFor();
+    await memoryPage.getByText("Incorrect credentials").waitFor();
     assert.equal(await inspectRemembered(), null, 'Failed login must not save credentials');
     memoryState.acceptLogin = true;
     await submitLogin('remember@example.test', 'test-password-123');
@@ -282,60 +284,60 @@ async function main() {
       }, event);
       await memoryPage.waitForFunction(() => document.querySelector('#login-email') && !document.querySelector('#login-email').disabled);
       assert.equal(await memoryPage.evaluate(() => localStorage.getItem('token')), null);
-      assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-123');
-      await memoryPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+      assert.equal(await memoryPage.getByLabel("Password", { exact: true }).inputValue(), 'test-password-123');
+      await memoryPage.getByRole('button', { name: "Log in", exact: true }).click();
       await memoryPage.locator('.favorites-section').waitFor();
     }
     await memoryPage.goto(base + '/accounts');
     await memoryPage.waitForFunction(() => document.querySelector('#login-email') && !document.querySelector('#login-email').disabled);
     assert.equal(await memoryPage.evaluate(() => localStorage.getItem('token')), null, 'Leaving a document must clear its session');
-    await memoryPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+    await memoryPage.getByRole('button', { name: "Log in", exact: true }).click();
     await memoryPage.locator('.favorites-section').waitFor();
     await memoryPage.close();
     memoryPage = await memoryContext.newPage();
     await memoryPage.goto(base + '/accounts');
     await memoryPage.waitForFunction(() => document.querySelector('#login-email') && !document.querySelector('#login-email').disabled);
     assert.equal(await memoryPage.evaluate(() => localStorage.getItem('token')), null, 'Closing and reopening must require login');
-    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-123');
-    await memoryPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+    assert.equal(await memoryPage.getByLabel("Password", { exact: true }).inputValue(), 'test-password-123');
+    await memoryPage.getByRole('button', { name: "Log in", exact: true }).click();
     await memoryPage.locator('.favorites-section').waitFor();
     await logout();
     assert.equal(await memoryPage.getByLabel('Email', { exact: true }).inputValue(), 'remember@example.test');
-    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-123');
-    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).getAttribute('type'), 'password');
+    assert.equal(await memoryPage.getByLabel("Password", { exact: true }).inputValue(), 'test-password-123');
+    assert.equal(await memoryPage.getByLabel("Password", { exact: true }).getAttribute('type'), 'password');
     await memoryPage.close();
     memoryPage = await memoryContext.newPage();
     await memoryPage.goto(base + '/login');
     await memoryPage.waitForFunction(() => !document.querySelector('#login-email').disabled);
-    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-123');
+    assert.equal(await memoryPage.getByLabel("Password", { exact: true }).inputValue(), 'test-password-123');
     await memoryPage.screenshot({ path: path.join(qa, 'remembered-login-mobile.png'), fullPage: true, animations: 'disabled' });
-    await memoryPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+    await memoryPage.getByRole('button', { name: "Log in", exact: true }).click();
     await memoryPage.locator('.favorites-section').waitFor();
     memoryState.expired = true;
-    await memoryPage.getByRole('link', { name: 'Comptes', exact: true }).click();
+    await memoryPage.getByRole('link', { name: "Accounts", exact: true }).click();
     await memoryPage.waitForFunction(() => document.querySelector('#login-email') && !document.querySelector('#login-email').disabled);
     assert.equal(await memoryPage.getByLabel('Email', { exact: true }).inputValue(), 'remember@example.test');
-    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-123');
+    assert.equal(await memoryPage.getByLabel("Password", { exact: true }).inputValue(), 'test-password-123');
     memoryState.expired = false;
     memoryState.acceptLogin = false;
     await submitLogin('new@example.test', 'failed-replacement');
-    await memoryPage.getByText('Identifiants incorrects').waitFor();
+    await memoryPage.getByText("Incorrect credentials").waitFor();
     await memoryPage.reload();
     await memoryPage.waitForFunction(() => !document.querySelector('#login-email').disabled);
-    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'test-password-123');
+    assert.equal(await memoryPage.getByLabel("Password", { exact: true }).inputValue(), 'test-password-123');
     memoryState.acceptLogin = true;
     await submitLogin('new@example.test', 'new-test-password');
     await memoryPage.locator('.favorites-section').waitFor();
     await logout();
     assert.equal(await memoryPage.getByLabel('Email', { exact: true }).inputValue(), 'new@example.test');
-    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), 'new-test-password');
-    await memoryPage.getByRole('button', { name: 'Oublier mes identifiants', exact: true }).click();
+    assert.equal(await memoryPage.getByLabel("Password", { exact: true }).inputValue(), 'new-test-password');
+    await memoryPage.getByRole('button', { name: "Forget my credentials", exact: true }).click();
     await memoryPage.waitForFunction(() => !document.querySelector('#login-email').disabled && document.querySelector('#login-email').value === '');
     assert.deepEqual((await inspectRemembered()).keys, ['enabled']);
     await memoryPage.reload();
     await memoryPage.waitForFunction(() => !document.querySelector('#login-email').disabled);
-    assert.equal(await memoryPage.getByLabel('Mot de passe', { exact: true }).inputValue(), '');
-    assert.equal(await memoryPage.getByLabel('Mémoriser mes identifiants sur cet appareil').isChecked(), false);
+    assert.equal(await memoryPage.getByLabel("Password", { exact: true }).inputValue(), '');
+    assert.equal(await memoryPage.getByLabel("Remember my credentials on this device").isChecked(), false);
     await submitLogin('unsaved@example.test', 'unsaved-test-password');
     await memoryPage.locator('.favorites-section').waitFor();
     await logout();
@@ -350,9 +352,9 @@ async function main() {
     const pendingPage = await pendingContext.newPage();
     await pendingPage.goto(base + '/login');
     await pendingPage.getByLabel('Email', { exact: true }).fill('pending@example.test');
-    await pendingPage.getByLabel('Mot de passe', { exact: true }).fill('pending-test-password');
+    await pendingPage.getByLabel("Password", { exact: true }).fill('pending-test-password');
     const submitted = pendingPage.waitForRequest(request => request.url().endsWith('/rest/v1/rpc/usb_login'));
-    await pendingPage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+    await pendingPage.getByRole('button', { name: "Log in", exact: true }).click();
     await submitted;
     await pendingPage.evaluate(() => {
       Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
@@ -360,7 +362,7 @@ async function main() {
       Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
     });
     releaseLogin();
-    await pendingPage.getByText('La page a été quittée. Appuyez sur « Se connecter » pour reprendre.', { exact: true }).waitFor();
+    await pendingPage.getByText("You left the page. Select Log in to continue.", { exact: true }).waitFor();
     assert.equal(await pendingPage.evaluate(() => localStorage.getItem('token')), null);
     assert.equal(await pendingPage.locator('.app-bottom-nav').count(), 0);
     await pendingContext.close();
@@ -371,10 +373,10 @@ async function main() {
     await unavailableContext.addInitScript(() => Object.defineProperty(window, 'indexedDB', { value: undefined }));
     const unavailablePage = await unavailableContext.newPage();
     await unavailablePage.goto(base + '/login');
-    await unavailablePage.getByText('La mémorisation est indisponible dans ce navigateur. Vous pouvez vous connecter normalement.').waitFor();
+    await unavailablePage.getByText("Saving credentials is unavailable in this browser. You can still log in normally.").waitFor();
     await unavailablePage.getByLabel('Email', { exact: true }).fill('test@example.test');
-    await unavailablePage.getByLabel('Mot de passe', { exact: true }).fill('test-password');
-    await unavailablePage.getByRole('button', { name: 'Se connecter', exact: true }).click();
+    await unavailablePage.getByLabel("Password", { exact: true }).fill('test-password');
+    await unavailablePage.getByRole('button', { name: "Log in", exact: true }).click();
     await unavailablePage.locator('.favorites-section').waitFor();
     await unavailableContext.close();
 
@@ -388,10 +390,10 @@ async function main() {
     await failurePage.locator('.startup-screen').waitFor();
     await failurePage.screenshot({ path: path.join(qa, 'startup-mobile.png') });
     assert.equal(await failurePage.locator('.auth-form').count(), 0);
-    await failurePage.getByRole('button', { name: 'Réessayer' }).waitFor();
+    await failurePage.getByRole('button', { name: "Try again" }).waitFor();
     assert.equal(await failurePage.locator('.favorite-amount').count(), 0);
     failureState.failData = false;
-    await failurePage.getByRole('button', { name: 'Réessayer' }).click();
+    await failurePage.getByRole('button', { name: "Try again" }).click();
     await failurePage.locator('.favorites-section').waitFor();
     await failureContext.close();
 
@@ -429,9 +431,9 @@ async function main() {
     await pwaPage.goto(base + '/operations/new');
     await pwaPage.locator('input[name="amount"]').fill('123');
     await pwaPage.evaluate(async () => (await navigator.serviceWorker.getRegistration()).update());
-    await pwaPage.getByText('Une mise à jour est disponible.').waitFor();
+    await pwaPage.getByText("An update is available.").waitFor();
     assert.equal(await pwaPage.locator('input[name="amount"]').inputValue(), '123');
-    await pwaPage.getByRole('button', { name: 'Actualiser', exact: true }).click();
+    await pwaPage.getByRole('button', { name: "Update", exact: true }).click();
     await pwaPage.waitForFunction(async () => !(await caches.keys()).includes('ubs-bank-v2'));
     assert(await pwaPage.evaluate(async () => (await caches.keys()).includes('another-app')));
     await pwaPage.locator('.app-bottom-nav').waitFor();
@@ -439,9 +441,9 @@ async function main() {
     offlineState.offline = true;
     await pwaContext.setOffline(true);
     await pwaPage.goto(base + '/accounts');
-    await pwaPage.getByRole('button', { name: 'Réessayer' }).waitFor();
+    await pwaPage.getByRole('button', { name: "Try again" }).waitFor();
     assert.equal(await pwaPage.evaluate(() => localStorage.getItem('token')), 'test-token');
-    await pwaPage.getByText('Hors connexion. Les opérations nécessitent Internet.').waitFor();
+    await pwaPage.getByText("You are offline. Transactions require an internet connection.").waitFor();
     await pwaContext.close();
 
     // Even when JS cannot load, HTML alone offers recovery and retains credentials.
@@ -450,7 +452,7 @@ async function main() {
     await repairContext.route('**/assets/*.js', route => failScript ? route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html>wrong deployment' }) : route.continue());
     const repairPage = await repairContext.newPage();
     await repairPage.goto(base + '/login');
-    await repairPage.getByRole('button', { name: 'Réparer et recharger' }).waitFor();
+    await repairPage.getByRole('button', { name: "Repair and reload" }).waitFor();
     await repairPage.evaluate(async () => {
       localStorage.setItem('remember-repair-test', 'preserved');
       await caches.open('ubs-bank-broken');
@@ -468,13 +470,13 @@ async function main() {
       });
     });
     await repairContext.setOffline(true);
-    await repairPage.getByRole('button', { name: 'Réparer et recharger' }).click();
-    await repairPage.getByText('Impossible de joindre l’application. Vérifiez Internet puis réessayez.').waitFor();
+    await repairPage.getByRole('button', { name: "Repair and reload" }).click();
+    await repairPage.getByText("Unable to reach the app. Check your connection and try again.").waitFor();
     assert((await repairPage.evaluate(() => caches.keys())).includes('ubs-bank-broken'), 'Offline repair must preserve the existing cache');
     await repairContext.setOffline(false);
     failScript = false;
-    await repairPage.getByRole('button', { name: 'Réparer et recharger' }).click();
-    await repairPage.getByRole('button', { name: 'Se connecter', exact: true }).waitFor();
+    await repairPage.getByRole('button', { name: "Repair and reload" }).click();
+    await repairPage.getByRole('button', { name: "Log in", exact: true }).waitFor();
     assert.equal(await repairPage.evaluate(() => localStorage.getItem('remember-repair-test')), 'preserved');
     const repairCacheKeys = await repairPage.evaluate(() => caches.keys());
     assert(!repairCacheKeys.includes('ubs-bank-broken'));

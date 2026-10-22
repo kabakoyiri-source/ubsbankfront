@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import { calculateBalances } from '../services/balances'
 import { formatAmount } from '../services/money'
@@ -48,6 +48,7 @@ const MastercardIcon = ({ size = 32, className = '' }) => (
   />
 )
 import './Dashboard.css'
+import { getPreferredCurrency, normalizeCurrency, setPreferredCurrency } from '../services/currency'
 
 // Illustrative portfolio curves, independent of the actual account balance.
 const tradingPreview = {
@@ -59,6 +60,7 @@ const tradingPreview = {
 function Dashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [clients, setClients] = useState([])
   const [operations, setOperations] = useState([])
   const [adminBalance, setAdminBalance] = useState({ chf: 0, eur: 0, usd: 0 })
@@ -69,7 +71,7 @@ function Dashboard() {
   const [showBalance, setShowBalance] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const menuRef = useRef(null)
-  const [selectedCurrency, setSelectedCurrency] = useState('chf')
+  const [selectedCurrency, setSelectedCurrency] = useState(() => normalizeCurrency(location.state?.currency || getPreferredCurrency()).toLowerCase())
   const preview = tradingPreview[selectedCurrency]
 
   useEffect(() => {
@@ -119,8 +121,8 @@ function Dashboard() {
       const recentOperations = allOperations.slice(0, 10)
       setOperations(recentOperations)
     } catch (error) {
-      console.error('Erreur lors du chargement des données:', error)
-      setLoadError('Impossible de charger vos comptes. Vérifiez votre connexion puis réessayez.')
+      console.error("Unable to load data:", error)
+      setLoadError("Unable to load your accounts. Check your connection and try again.")
     } finally {
       setLoading(false)
     }
@@ -172,7 +174,7 @@ function Dashboard() {
       <div className="dashboard-container">
         <div className="loading-container">
           <FiLoader className="spinner-icon" size={48} />
-          <p>Chargement...</p>
+          <p>Loading...</p>
         </div>
       </div>
     )
@@ -181,7 +183,7 @@ function Dashboard() {
   if (loadError) return (
     <div className="dashboard-error" role="alert">
       <p>{loadError}</p>
-      <button className="btn btn-primary" onClick={loadData}>Réessayer</button>
+      <button className="btn btn-primary" onClick={loadData}>Try again</button>
     </div>
   )
 
@@ -195,12 +197,12 @@ function Dashboard() {
               <button 
                 className="profile-avatar"
                 onClick={() => setSidebarOpen(true)}
-                aria-label="Ouvrir le menu"
+                aria-label="Open menu"
               >
                 <FiUser size={24} />
               </button>
               <div className="home-section">
-                <span className="home-label">Accueil</span>
+                <span className="home-label">Home</span>
                 {user && (
                   <span className="greeting-text">
                       {user.firstName && user.lastName 
@@ -212,12 +214,12 @@ function Dashboard() {
             </div>
           </div>
           <div className="header-right">
-            <button className="header-icon-btn" aria-label="Ouvrir le menu" onClick={() => setSidebarOpen(true)}>
+            <button className="header-icon-btn" aria-label="Open menu" onClick={() => setSidebarOpen(true)}>
               <FiMoreHorizontal size={24} />
             </button>
             <button 
               className={`header-icon-btn notification-btn ${hasRecentAction ? 'has-recent' : ''}`}
-              aria-label="Consulter les notifications"
+              aria-label="View notifications"
               onClick={handleNotificationClick}
             >
               <FiMessageSquare size={24} />
@@ -235,19 +237,19 @@ function Dashboard() {
           <div className="quick-action-icon scan-icon">
             <ScanIcon size={24} />
           </div>
-          <span className="quick-action-label">Scanner &amp;<br />Payer</span>
+          <span className="quick-action-label">Scan &amp;<br />Pay</span>
         </Link>
         <Link to="/balance/load" className="quick-action-item">
           <div className="quick-action-icon load-icon">
             <FiCreditCard size={24} />
           </div>
-          <span className="quick-action-label">Recharger</span>
+          <span className="quick-action-label">Top up</span>
         </Link>
           <Link to="/operations/transfer" className="quick-action-item">
           <div className="quick-action-icon transfer-icon">
             <FiSend size={24} />
           </div>
-          <span className="quick-action-label">Transfert</span>
+          <span className="quick-action-label">Transfer</span>
         </Link>
       </div>
 
@@ -255,7 +257,7 @@ function Dashboard() {
       <div className="trading-portfolio">
         <div className="portfolio-header">
           <span className="portfolio-dot"></span>
-          <span className="portfolio-title">Portefeuille de Trading</span>
+          <span className="portfolio-title">Trading portfolio</span>
         </div>
 
         <div className="portfolio-main">
@@ -263,17 +265,17 @@ function Dashboard() {
             <button 
               className={`currency-tab ${selectedCurrency === 'chf' ? 'active' : ''}`}
               aria-pressed={selectedCurrency === 'chf'}
-              onClick={() => setSelectedCurrency('chf')}
+              onClick={() => setSelectedCurrency(setPreferredCurrency('CHF').toLowerCase())}
             >CHF</button>
             <button 
               className={`currency-tab ${selectedCurrency === 'eur' ? 'active' : ''}`}
               aria-pressed={selectedCurrency === 'eur'}
-              onClick={() => setSelectedCurrency('eur')}
+              onClick={() => setSelectedCurrency(setPreferredCurrency('EUR').toLowerCase())}
             >EUR</button>
             <button 
               className={`currency-tab ${selectedCurrency === 'usd' ? 'active' : ''}`}
               aria-pressed={selectedCurrency === 'usd'}
-              onClick={() => setSelectedCurrency('usd')}
+              onClick={() => setSelectedCurrency(setPreferredCurrency('USD').toLowerCase())}
             >USD</button>
           </div>
           <span className="portfolio-amount">
@@ -286,7 +288,7 @@ function Dashboard() {
         </div>
 
         <div className="portfolio-chart">
-          <svg viewBox="0 0 320 140" className="portfolio-svg" role="img" aria-label={`Courbe de démonstration ${selectedCurrency.toUpperCase()}`}>
+          <svg viewBox="0 0 320 140" className="portfolio-svg" role="img" aria-label={`Illustrative chart ${selectedCurrency.toUpperCase()}`}>
             {/* Ligne 0% */}
             <line
               x1="0"
@@ -333,28 +335,28 @@ function Dashboard() {
             </defs>
           </svg>
         </div>
-        <p className="portfolio-demo-note">Courbe de démonstration</p>
+        <p className="portfolio-demo-note">Illustrative chart</p>
 
         <div className="portfolio-footer">
           
         </div>
 
         <div className="custody-row">
-          <span>Compte de garde</span>
+          <span>Custody account</span>
           <span>{selectedCurrency.toUpperCase()} {formatAmount(adminBalance[selectedCurrency])}</span>
         </div>
       </div>
 
       {/* Favorites */}
       <section className="favorites-section" aria-labelledby="favorites-heading">
-        <h2 className="favorites-header" id="favorites-heading">Favoris</h2>
+        <h2 className="favorites-header" id="favorites-heading">Favourites</h2>
         <div className="favorites-list">
 
         <div className="favorite-item">
           <div className="favorite-left">
             <span className="favorite-icon"><FiLayers size={24} aria-hidden="true" /></span>
             <div>
-              <div className="favorite-label">Compte CHF</div>
+              <div className="favorite-label">CHF account</div>
               <div className="favorite-amount">CHF {formatAmount(adminBalance.chf)}</div>
             </div>
           </div>
@@ -368,7 +370,7 @@ function Dashboard() {
             </span>
 
             <div>
-              <div className="favorite-label">Compte EUR</div>
+              <div className="favorite-label">EUR account</div>
               <div className="favorite-amount">EUR {formatAmount(adminBalance.eur)}</div>
             </div>
           </div>
@@ -385,7 +387,7 @@ function Dashboard() {
           <button 
             className="sidebar-close"
             onClick={() => setSidebarOpen(false)}
-            aria-label="Fermer le menu"
+            aria-label="Close menu"
           >
             <FiX size={24} />
           </button>
@@ -397,7 +399,7 @@ function Dashboard() {
             onClick={() => setSidebarOpen(false)}
           >
             <FiHome size={22} />
-            <span>Accueil</span>
+            <span>Home</span>
           </Link>
           <Link 
             to="/clients" 
@@ -405,7 +407,7 @@ function Dashboard() {
             onClick={() => setSidebarOpen(false)}
           >
             <FiUsers size={22} />
-            <span>Bénéficiaires</span>
+            <span>Beneficiaries</span>
           </Link>
           <Link 
             to="/operations" 
@@ -413,7 +415,7 @@ function Dashboard() {
             onClick={() => setSidebarOpen(false)}
           >
             <FiRepeat size={22} />
-            <span>Opérations</span>
+            <span>Transactions</span>
           </Link>
           <Link 
             to="/history" 
@@ -421,7 +423,7 @@ function Dashboard() {
             onClick={() => setSidebarOpen(false)}
           >
             <FiClock size={22} />
-            <span>Historique</span>
+            <span>History</span>
           </Link>
         </nav>
         <div className="sidebar-logout">
@@ -430,7 +432,7 @@ function Dashboard() {
             onClick={handleLogout}
           >
             <FiLogOut size={12} />
-            <span>Déconnexion</span>
+            <span>Log out</span>
           </button>
         </div>
       </div>

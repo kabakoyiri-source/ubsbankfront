@@ -6,6 +6,7 @@ import { FiArrowLeft, FiUser, FiUserPlus, FiRepeat, FiDollarSign, FiFileText, Fi
 import api from '../services/api'
 import { calculateBalances } from '../services/balances'
 import './AddOperation.css'
+import { getPreferredCurrency, setPreferredCurrency } from '../services/currency'
 
 function AddOperation() {
   const navigate = useNavigate()
@@ -13,7 +14,7 @@ function AddOperation() {
   const [searchParams] = useSearchParams()
   const clientIdParam = searchParams.get('clientId')
   const draft = location.state?.transferDraft || {}
-  const source = ['chf', 'eur', 'usd'].includes(draft.adminAccountType) ? draft.adminAccountType : 'chf'
+  const source = ['chf', 'eur', 'usd'].includes(draft.adminAccountType) ? draft.adminAccountType : getPreferredCurrency().toLowerCase()
 
   const [clients, setClients] = useState([])
   const [clientsLoading, setClientsLoading] = useState(true)
@@ -39,9 +40,9 @@ function AddOperation() {
 
   // Comptes disponibles pour l'admin
   const adminAccounts = [
-    { id: 'chf', name: 'Compte CHF', rib: 'CH93 0076 2011 6238 5295 7', icon: FiLayers },
-    { id: 'eur', name: 'Compte EUR', rib: 'CH55 0023 5235 8890 1234 5', icon: FiSave },
-    { id: 'usd', name: 'Compte USD', rib: 'CH81 0024 1016 3852 9450 1', icon: FiDollarSign }
+    { id: 'chf', name: "CHF account", rib: 'CH93 0076 2011 6238 5295 7', icon: FiLayers },
+    { id: 'eur', name: "EUR account", rib: 'CH55 0023 5235 8890 1234 5', icon: FiSave },
+    { id: 'usd', name: "USD account", rib: 'CH81 0024 1016 3852 9450 1', icon: FiDollarSign }
   ]
 
   useEffect(() => {
@@ -55,12 +56,12 @@ function AddOperation() {
     setClientsError('')
     try {
       const response = await api.get('/clients')
-      if (!response.data.success || !Array.isArray(response.data.data)) throw new Error('Chargement impossible')
+      if (!response.data.success || !Array.isArray(response.data.data)) throw new Error("Unable to load")
       const clientsData = response.data.data
       setClients(clientsData)
       setFormData(previous => ({ ...previous, clientId: clientsData.some(client => client._id === previous.clientId && (!client.status || client.status === 'active')) ? previous.clientId : '' }))
     } catch (error) {
-      setClientsError('Impossible de charger les bénéficiaires. Réessayez.')
+      setClientsError("Unable to load beneficiaries. Try again.")
     } finally { setClientsLoading(false) }
   }
 
@@ -72,7 +73,7 @@ function AddOperation() {
         api.get('/auth/me'),
         api.get('/operations')
       ])
-      if (!userResponse.data.success || !operationsResponse.data.success) throw new Error('Chargement impossible')
+      if (!userResponse.data.success || !operationsResponse.data.success) throw new Error("Unable to load")
       
       if (userResponse.data.success) {
         setAdminAccount(userResponse.data.user)
@@ -87,13 +88,14 @@ function AddOperation() {
         setAdminBalance(calculateBalances(operations))
       }
     } catch (error) {
-      setBalanceError('Impossible de charger le solde disponible. Réessayez.')
+      setBalanceError("Unable to load the available balance. Try again.")
     } finally { setBalanceLoading(false) }
   }
 
   const handleChange = (e) => {
     const { name, value } = e.target
     if (name === 'adminAccountType') {
+      setPreferredCurrency(value)
       setFormData(prev => ({
         ...prev,
         adminAccountType: value,
@@ -113,33 +115,33 @@ function AddOperation() {
 
     // Validation
     if (clientsLoading || clientsError || !clients.some(client => client._id === formData.clientId && (!client.status || client.status === 'active'))) {
-      setError('Veuillez sélectionner un bénéficiaire')
+      setError("Select a beneficiary")
       return
     }
 
     if (!formData.adminAccountType) {
-      setError('Veuillez sélectionner le compte source')
+      setError("Select a source account")
       return
     }
 
     const amount = parseFloat(formData.amount)
     if (!Number.isFinite(amount) || amount <= 0 || Math.abs(amount * 100 - Math.round(amount * 100)) > .000001) {
-      setError('Veuillez saisir un montant valide')
+      setError("Enter a valid amount")
       return
     }
 
     if (balanceLoading || balanceError) {
-      setError('Chargez le solde disponible avant de continuer.')
+      setError("Load the available balance before continuing.")
       return
     }
     if (Math.round(amount * 100) > Math.round(adminBalance[formData.adminAccountType] * 100)) {
-      setError(`Solde insuffisant sur le compte ${formData.currency}. Ajoutez des fonds dans les paramètres.`)
+      setError(`Insufficient funds in the ${formData.currency} account. Add funds in Settings.`)
       return
     }
 
     // Validation pour virement instantané
     if (formData.transferType === 'instant' && amount > MAX_INSTANT_AMOUNT) {
-      setError(`Le montant maximum pour un virement instantané est de ${formatAmount(MAX_INSTANT_AMOUNT, 0)} ${formData.currency}. Veuillez choisir un virement en 2 jours ouvrables pour ce montant.`)
+      setError(`The maximum amount for an instant transfer is ${formatAmount(MAX_INSTANT_AMOUNT, 0)} ${formData.currency}. Choose a transfer within 2 working days for this amount.`)
       return
     }
 
@@ -172,10 +174,10 @@ function AddOperation() {
       const response = await api.post('/operations/transfer', payload)
       if (response.data.success) {
         navigate('/operations')
-      } else throw new Error(response.data.message || 'Le virement a échoué.')
+      } else throw new Error(response.data.message || "The transfer failed.")
     } catch (error) {
-      console.error('Erreur complète:', error.response?.data || error)
-      const errorMessage = error.response?.data?.message || error.message || 'Erreur lors de la création de l\'opération'
+      console.error("Full error:", error.response?.data || error)
+      const errorMessage = error.response?.data?.message || error.message || "Unable to create the transaction"
       setError(errorMessage)
       setShowConfirmation(false)
       loadAdminAccount()
@@ -198,12 +200,12 @@ function AddOperation() {
         <button 
           onClick={() => navigate('/operations')} 
           className="back-button"
-          aria-label="Retour"
+          aria-label="Back"
         >
           <FiArrowLeft size={20} />
         </button>
         <div className="header-content">
-          <h1>Nouvelle opération</h1>
+          <h1>New transaction</h1>
         </div>
       </div>
 
@@ -212,8 +214,8 @@ function AddOperation() {
           <span>{error}</span>
         </div>
       )}
-      {balanceError && <div className="error-message" role="alert"><span>{balanceError}</span><button type="button" className="btn btn-primary" onClick={loadAdminAccount}>Réessayer</button></div>}
-      {location.state?.beneficiaryCreated && <p className="beneficiary-notice" role="status">Bénéficiaire ajouté et sélectionné. Vous pouvez poursuivre votre virement.</p>}
+      {balanceError && <div className="error-message" role="alert"><span>{balanceError}</span><button type="button" className="btn btn-primary" onClick={loadAdminAccount}>Try again</button></div>}
+      {location.state?.beneficiaryCreated && <p className="beneficiary-notice" role="status">Beneficiary added and selected. You can continue your transfer.</p>}
 
       <form onSubmit={handleSubmit} className="add-operation-form">
         {/* Informations de l'opération */}
@@ -222,13 +224,13 @@ function AddOperation() {
             <div className="section-icon">
               <FiRepeat size={24} />
             </div>
-            <h2>Informations de l'opération</h2>
+            <h2>Transaction information</h2>
           </div>
           
           <div className="form-group">
             <label htmlFor="clientId">
               <FiUser size={16} /> 
-              Bénéficiaire <span className="required">*</span>
+              Beneficiary <span className="required">*</span>
             </label>
             <select
               id="clientId"
@@ -239,22 +241,22 @@ function AddOperation() {
               aria-describedby="beneficiary-help"
               required
             >
-              <option value="" disabled>{clientsLoading ? 'Chargement des bénéficiaires…' : clientsError ? 'Liste indisponible' : !clients.length ? 'Aucun bénéficiaire enregistré' : 'Sélectionner un bénéficiaire'}</option>
+              <option value="" disabled>{clientsLoading ? "Loading beneficiaries…" : clientsError ? "List unavailable" : !clients.length ? "No saved beneficiaries" : "Select a beneficiary"}</option>
               {clients.map((client) => {
                 const displayName = client.firstName && client.lastName 
                   ? `${client.firstName} ${client.lastName}`
-                  : client.firstName || client.lastName || client.accountNumber || 'Client sans nom'
+                  : client.firstName || client.lastName || client.accountNumber || "Unnamed beneficiary"
                 return (
                   <option key={client._id} value={client._id} disabled={!!client.status && client.status !== 'active'}>
-                    {displayName}{client.status && client.status !== 'active' ? ' (indisponible)' : ''}
+                    {displayName}{client.status && client.status !== 'active' ? "(unavailable)" : ''}
                   </option>
                 )
               })}
             </select>
             <div id="beneficiary-help" className="beneficiary-help">
-              {clientsError ? <div role="alert"><p>{clientsError}</p><button type="button" className="funds-shortcut" onClick={loadClients}>Réessayer</button></div> : !clientsLoading && !clients.length ? <p>Ajoutez votre premier bénéficiaire pour effectuer un virement.</p> : null}
+              {clientsError ? <div role="alert"><p>{clientsError}</p><button type="button" className="funds-shortcut" onClick={loadClients}>Try again</button></div> : !clientsLoading && !clients.length ? <p>Add your first beneficiary to make a transfer.</p> : null}
               <button type="button" className="funds-shortcut beneficiary-add" onClick={() => navigate('/clients/new', { state: { returnTo: location.pathname, transferDraft: formData } })}>
-                <FiUserPlus size={20} aria-hidden="true" /> Ajouter un bénéficiaire
+                <FiUserPlus size={20} aria-hidden="true" /> Add a beneficiary
               </button>
             </div>
           </div>
@@ -262,7 +264,7 @@ function AddOperation() {
           <div className="form-group">
             <label htmlFor="adminAccountType">
               <FiLayers size={16} /> 
-              Compte source <span className="required">*</span>
+              Source account <span className="required">*</span>
             </label>
             <select
               id="adminAccountType"
@@ -282,33 +284,33 @@ function AddOperation() {
             {adminAccount && (
               <div className="account-info-box">
                 <div className="account-balance">
-                  <span>Solde disponible:</span>
+                  <span>Available balance:</span>
                    <strong>{
                     formatAmount(adminBalance[formData.adminAccountType] || 0)
                   } {formData.adminAccountType.toUpperCase()}</strong>
                 </div>
               </div>
             )}
-            <button type="button" className="funds-shortcut" onClick={() => navigate('/settings')}>Ajouter des fonds</button>
+            <button type="button" className="funds-shortcut" onClick={() => navigate('/settings')}>Add funds</button>
           </div>
 
           <div className="form-group">
             <label htmlFor="amount">
               <FiDollarSign size={20} aria-hidden="true" />
-              Montant ({formData.currency}) <span className="required">*</span>
+              Amount ({formData.currency}) <span className="required">*</span>
             </label>
             <AmountInput
               id="amount"
               name="amount"
               value={formData.amount}
               onValueChange={amount => { setFormData(previous => ({ ...previous, amount })); setError('') }}
-              placeholder="0,00"
+              placeholder="0.00"
               required
             />
             {formData.amount && parseFloat(formData.amount) > MAX_INSTANT_AMOUNT && formData.transferType === 'instant' && (
               <div className="warning-message">
                 <FiAlertCircle size={16} /> 
-                <span>Le montant maximum pour un virement instantané est de {formatAmount(MAX_INSTANT_AMOUNT, 0)} {formData.currency}. Veuillez choisir "Virement en 2 jours ouvrables" pour ce montant.</span>
+                <span>The maximum amount for an instant transfer is {formatAmount(MAX_INSTANT_AMOUNT, 0)} {formData.currency}. Choose a transfer within 2 working days for this amount.</span>
               </div>
             )}
           </div>
@@ -316,7 +318,7 @@ function AddOperation() {
           <div className="form-group">
             <label htmlFor="transferType">
               <FiClock size={16} /> 
-              Type de virement <span className="required">*</span>
+              Transfer type <span className="required">*</span>
             </label>
             <div className="transfer-type-options">
               <label className={`transfer-option ${formData.transferType === 'instant' ? 'selected' : ''}`}>
@@ -330,10 +332,10 @@ function AddOperation() {
                 <div className="transfer-option-content">
                   <div className="transfer-option-header">
                     <FiZap size={20} /> 
-                    <span className="transfer-option-title">Virement instantané</span>
+                    <span className="transfer-option-title">Instant transfer</span>
                   </div>
                   <div className="transfer-option-details">
-                    <span className="transfer-speed">Traitement immédiat</span>
+                    <span className="transfer-speed">Processed immediately</span>
                     <span className="transfer-limit">Maximum {formatAmount(MAX_INSTANT_AMOUNT, 0)} {formData.currency}</span>
                   </div>
                 </div>
@@ -350,11 +352,11 @@ function AddOperation() {
                 <div className="transfer-option-content">
                   <div className="transfer-option-header">
                     <FiClock size={20} /> 
-                    <span className="transfer-option-title">Virement en 2 jours ouvrables</span>
+                    <span className="transfer-option-title">Transfer within 2 working days</span>
                   </div>
                   <div className="transfer-option-details">
-                    <span className="transfer-speed">Traitement sous 2 jours ouvrables</span>
-                    <span className="transfer-limit">Montant illimité</span>
+                    <span className="transfer-speed">Processed within 2 working days</span>
+                    <span className="transfer-limit">No amount limit</span>
                   </div>
                 </div>
               </label>
@@ -364,7 +366,7 @@ function AddOperation() {
           <div className="form-group">
             <label htmlFor="description">
               <FiFileText size={16} /> 
-              Motifs
+              Reference
             </label>
             <textarea
               id="description"
@@ -372,7 +374,7 @@ function AddOperation() {
               value={formData.description}
               onChange={handleChange}
               rows="3"
-              placeholder="Motifs de l'opération (optionnel)"
+              placeholder="Transaction reference (optional)"
             />
           </div>
         </div>
@@ -386,7 +388,7 @@ function AddOperation() {
             disabled={loading || showConfirmation}
           >
             <FiX size={18} /> 
-            <span>Annuler</span>
+            <span>Cancel</span>
           </button>
           <button 
             type="submit" 
@@ -394,7 +396,7 @@ function AddOperation() {
             disabled={loading || showConfirmation || balanceLoading || !!balanceError || clientsLoading || !!clientsError || !formData.clientId}
           >
             <FiSave size={18} /> 
-            <span>Continuer</span>
+            <span>Continue</span>
           </button>
         </div>
       </form>
@@ -405,13 +407,13 @@ function AddOperation() {
           <div className="confirmation-modal" onClick={(e) => e.stopPropagation()}>
             <div className="confirmation-header">
               <FiAlertCircle size={24} className="confirmation-icon" /> 
-              <h3>Confirmation du virement</h3>
+              <h3>Transfer confirmation</h3>
             </div>
             
             <div className="confirmation-content">
               <div className="confirmation-info">
                 <p className="confirmation-text">
-                  Vous êtes sur le point d'effectuer un virement de :
+                  You are about to transfer:
                 </p>
                  <div className="confirmation-amount">
                   <span className="amount-value">
@@ -421,17 +423,17 @@ function AddOperation() {
                 
                 <div className="confirmation-details">
                   <div className="confirmation-detail-item">
-                    <span className="detail-label">Type de virement choisi :</span>
+                    <span className="detail-label">Selected transfer type:</span>
                     <span className="detail-value">
                       {formData.transferType === 'instant' ? (
                         <>
                           <FiZap size={16} /> 
-                          <strong>Virement instantané</strong>
+                          <strong>Instant transfer</strong>
                         </>
                       ) : (
                         <>
                           <FiClock size={16} /> 
-                          <strong>Virement en 2 jours ouvrables</strong>
+                          <strong>Transfer within 2 working days</strong>
                         </>
                       )}
                     </span>
@@ -441,18 +443,18 @@ function AddOperation() {
                     <div className="confirmation-note">
                       <FiZap size={16} /> 
                       <div>
-                        <strong>Traitement immédiat</strong>
+                        <strong>Processed immediately</strong>
                         <br />
-                        <span>Le montant maximum pour un virement instantané est de <strong>{formatAmount(MAX_INSTANT_AMOUNT, 0)} {formData.currency}</strong>.</span>
+                        <span>The maximum amount for an instant transfer is <strong>{formatAmount(MAX_INSTANT_AMOUNT, 0)} {formData.currency}</strong>.</span>
                       </div>
                     </div>
                   ) : (
                     <div className="confirmation-note">
                       <FiClock size={16} /> 
                       <div>
-                        <strong>Traitement sous 2 jours ouvrables</strong>
+                        <strong>Processed within 2 working days</strong>
                         <br />
-                        <span>Montant illimité pour ce type de virement.</span>
+                        <span>There is no amount limit for this transfer type.</span>
                       </div>
                     </div>
                   )}
@@ -468,7 +470,7 @@ function AddOperation() {
                 disabled={loading}
               >
                 <FiX size={18} /> 
-                <span>Annuler</span>
+                <span>Cancel</span>
               </button>
               <button
                 type="button"
@@ -477,7 +479,7 @@ function AddOperation() {
                 disabled={loading}
               >
                 <FiSave size={18} /> 
-                <span>{loading ? 'Traitement en cours...' : 'Confirmer le virement'}</span>
+                <span>{loading ? "Processing..." : "Confirm transfer"}</span>
               </button>
             </div>
           </div>

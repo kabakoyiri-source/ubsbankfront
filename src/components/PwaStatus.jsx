@@ -24,7 +24,7 @@ export default function PwaStatus() {
           inspect()
           registration.addEventListener('updatefound', updateFound)
           updateFound()
-        }).catch((error) => console.error('Enregistrement PWA impossible', error))
+        }).catch((error) => console.error("Unable to register the PWA", error))
     }
     return () => {
       disposed = true
@@ -43,10 +43,10 @@ export default function PwaStatus() {
   if (online && !waiting) return null
   return (
     <aside className="pwa-status" role="status">
-      {!online ? <span>Hors connexion. Les opérations nécessitent Internet.</span> : <>
-        <span>Une mise à jour est disponible.</span>
+      {!online ? <span>You are offline. Transactions require an internet connection.</span> : <>
+        <span>An update is available.</span>
         <button type="button" onClick={update} disabled={updating}>
-          {updating ? 'Mise à jour…' : 'Actualiser'}
+          {updating ? "Updating…" : "Update"}
         </button>
       </>}
     </aside>

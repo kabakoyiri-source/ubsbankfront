@@ -3,6 +3,7 @@ import { formatAmount } from '../services/money'
 import { useNavigate } from 'react-router-dom'
 import { FiArrowLeft, FiUser, FiCalendar, FiDollarSign, FiCreditCard, FiFileText } from 'react-icons/fi'
 import './OperationDetails.css'
+import { transactionInEnglish } from '../services/messages'
 
 function OperationDetails() {
   const navigate = useNavigate()
@@ -14,11 +15,11 @@ function OperationDetails() {
     if (storedOperation) {
       try {
         const parsedOperation = JSON.parse(storedOperation)
-        console.log('Données de l\'opération reçues:', parsedOperation)
+        console.log("Transaction data received:", parsedOperation)
         console.log('Reason:', parsedOperation.reason)
-        setOperation(parsedOperation)
+        setOperation(transactionInEnglish(parsedOperation))
       } catch (error) {
-        console.error('Erreur lors de la lecture des données de l\'opération:', error)
+        console.error("Unable to read the transaction data:", error)
         navigate('/')
       }
     } else {
@@ -30,7 +31,7 @@ function OperationDetails() {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString)
-    return date.toLocaleDateString('fr-FR', {
+    return date.toLocaleDateString("en-GB", {
       day: '2-digit',
       month: '2-digit',
       year: '2-digit',
@@ -53,16 +54,16 @@ function OperationDetails() {
   }
 
   const translateStatus = (status) => {
-    if (!status) return 'Terminé'
+    if (!status) return "Completed"
     switch (status.toLowerCase()) {
       case 'pending':
-        return 'En cours de traitement'
+        return "Processing"
       case 'completed':
-        return 'Terminé'
+        return "Completed"
       case 'failed':
-        return 'Échoué'
+        return "Failed"
       case 'cancelled':
-        return 'Annulé'
+        return "Cancelled"
       default:
         return status
     }
@@ -73,7 +74,7 @@ function OperationDetails() {
       <div className="operation-details-container">
         <div className="loading-container">
           <div className="spinner"></div>
-          <p>Chargement...</p>
+          <p>Loading...</p>
         </div>
       </div>
     )
@@ -83,9 +84,9 @@ function OperationDetails() {
     return (
       <div className="operation-details-container">
         <div className="error-container">
-          <p>Opération non trouvée</p>
+          <p>Transaction not found</p>
           <button onClick={() => navigate('/')} className="back-btn">
-            Retour à l'accueil
+            Back to Home
           </button>
         </div>
       </div>
@@ -104,7 +105,7 @@ function OperationDetails() {
           <FiArrowLeft size={24} />
           <span>←</span>
         </button>
-        <h1 className="details-title">Détails de l'opération</h1>
+        <h1 className="details-title">Transaction details</h1>
       </div>
 
       {/* Main Content */}
@@ -117,7 +118,7 @@ function OperationDetails() {
               {operation.currency || 'CHF'} {isIncoming && operation.amount > 0 ? '+' : ''}{formatAmount(operation.amount)}
             </div>
             <div className="amount-type">
-              {isIncoming ? 'Crédit' : 'Débit'}
+              {isIncoming ? "Credit" : "Debit"}
             </div>
           </div>
         </div>
@@ -127,11 +128,11 @@ function OperationDetails() {
           <div className="info-section">
             <h2 className="section-title">
               <FiUser size={20} />
-              Bénéficiaire
+              Beneficiary
             </h2>
             <div className="info-grid">
               <div className="info-item">
-                <span className="info-label">Nom</span>
+                <span className="info-label">Name</span>
                 <span className="info-value">
                   {client.firstName && client.firstName.trim() 
                     ? `${client.firstName} ${client.lastName}` 
@@ -140,11 +141,11 @@ function OperationDetails() {
               </div>
               <div className="info-item">
                 <span className="info-label">IBAN</span>
-                <span className="info-value">{client.accountNumber || 'Non disponible'}</span>
+                <span className="info-value">{client.accountNumber || "Not available"}</span>
               </div>
               <div className="info-item">
-                <span className="info-label">Banque</span>
-                <span className="info-value">{client.bankName || 'Non spécifiée'}</span>
+                <span className="info-label">Bank</span>
+                <span className="info-value">{client.bankName || "Not specified"}</span>
               </div>
             </div>
           </div>
@@ -154,7 +155,7 @@ function OperationDetails() {
         <div className="info-section">
           <h2 className="section-title">
             <FiFileText size={20} />
-            Informations sur l'opération
+            Transaction information
           </h2>
           <div className="info-grid">
             <div className="info-item">
@@ -163,22 +164,22 @@ function OperationDetails() {
             </div>
             <div className="info-item">
               <span className="info-label">Type</span>
-              <span className="info-value">{operation.type === 'deposit' ? 'Dépôt' : 'Virement'}</span>
+              <span className="info-value">{operation.type === 'deposit' ? "Deposit" : "Transfer"}</span>
             </div>
             <div className="info-item">
-              <span className="info-label">Statut</span>
+              <span className="info-label">Status</span>
               <span className="info-value status">{translateStatus(operation.status)}</span>
             </div>
             {(operation.reason || operation.description) && (
               <div className="info-item full-width">
-                <span className="info-label">Motif</span>
+                <span className="info-label">Reference</span>
                 <span className="info-value">{operation.reason || operation.description}</span>
               </div>
             )}
             {operation.adminAccountName && (
               <div className="info-item">
                 <span className="info-label">Source</span>
-                <span className="info-value">De: {operation.adminAccountName}</span>
+                <span className="info-value">From: {operation.adminAccountName}</span>
               </div>
             )}
           </div>
@@ -187,7 +188,7 @@ function OperationDetails() {
         {/* Action Buttons */}
         <div className="action-buttons">
           <button onClick={() => navigate('/')} className="primary-btn">
-            Retour à l'accueil
+            Back to Home
           </button>
         </div>
       </div>

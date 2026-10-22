@@ -22,7 +22,7 @@ function Clients() {
   const [searchTerm, setSearchTerm] = useState('')
   const [favorites, setFavorites] = useState(new Set())
   const [deleting, setDeleting] = useState(null)
-  const [notice, setNotice] = useState(location.state?.beneficiaryDeleted ? 'Bénéficiaire supprimé.' : '')
+  const [notice, setNotice] = useState(location.state?.beneficiaryDeleted ? "Beneficiary deleted." : '')
 
   useEffect(() => {
     loadClients()
@@ -52,10 +52,10 @@ function Clients() {
     setError('')
     try {
       const response = await api.get('/clients')
-      if (!response.data.success || !Array.isArray(response.data.data)) throw new Error('Chargement impossible')
+      if (!response.data.success || !Array.isArray(response.data.data)) throw new Error("Unable to load")
       setClients(response.data.data)
     } catch (error) {
-      setError('Impossible de charger les bénéficiaires. Réessayez.')
+      setError("Unable to load beneficiaries. Try again.")
     } finally {
       setLoading(false)
     }
@@ -69,7 +69,7 @@ function Clients() {
       <div className="container">
         <div className="loading-container">
           <FiLoader className="spinner-icon" size={48} />
-          <p>Chargement des bénéficiaires...</p>
+          <p>Loading beneficiaries...</p>
         </div>
       </div>
     )
@@ -82,20 +82,20 @@ function Clients() {
           <button 
             onClick={() => navigate('/')} 
             className="back-button"
-            aria-label="Retour"
+            aria-label="Back"
           >
             <FiArrowLeft size={20} />
           </button>
-          <h1>Bénéficiaires</h1>
+          <h1>Beneficiaries</h1>
 
         </div>
         <Link to="/clients/new" className="btn btn-primary" style={{ alignItems: 'right' }}>
           <FiArrowRight size={18} />
-            <span>Ajouter un bénéficiaire</span>
+            <span>Add a beneficiary</span>
         </Link>
       </div>
 
-      {error && <div className="error-message" role="alert"><p>{error}</p><button type="button" className="btn btn-primary" onClick={loadClients}>Réessayer</button></div>}
+      {error && <div className="error-message" role="alert"><p>{error}</p><button type="button" className="btn btn-primary" onClick={loadClients}>Try again</button></div>}
       {notice && <p className="beneficiary-notice" role="status">{notice}</p>}
 
       <div className="search-section">
@@ -103,7 +103,7 @@ function Clients() {
           <FiSearch className="search-icon" size={20} />
           <input
             type="text"
-            placeholder="Rechercher un bénéficiaire par nom ou numéro de compte..."
+            placeholder="Search beneficiaries by name or account number..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
@@ -111,7 +111,7 @@ function Clients() {
         </div>
         {searchTerm && (
           <div className="search-results">
-            {filteredClients.length} résultat(s) trouvé(s)
+            {filteredClients.length} result(s) found
           </div>
         )}
       </div>
@@ -121,14 +121,14 @@ function Clients() {
           <div className="empty-icon-wrapper">
             <FiUsers size={64} />
           </div>
-          <h3>Aucun bénéficiaire trouvé</h3>
+          <h3>No beneficiaries found</h3>
           <p>
-            {searchTerm ? 'Aucun bénéficiaire ne correspond à votre recherche' : 'Commencez par ajouter votre premier bénéficiaire'}
+            {searchTerm ? "No beneficiaries match your search" : "Start by adding your first beneficiary"}
           </p>
           {!searchTerm && (
             <Link to="/clients/new" className="btn btn-primary">
               <FiArrowRight size={18} />
-              <span>Ajouter un bénéficiaire</span>
+              <span>Add a beneficiary</span>
             </Link>
           )}
         </div>
@@ -152,12 +152,12 @@ function Clients() {
                   e.stopPropagation()
                   toggleFavorite(client._id)
                 }}
-                aria-label={favorites.has(client._id) ? "Retirer des favoris" : "Ajouter aux favoris"}
+                aria-label={favorites.has(client._id) ? "Remove from favourites" : "Add to favourites"}
               >
                 <FiStar size={20} />
               </button>
               <button type="button" className="beneficiary-delete-btn"
-                aria-label={`Supprimer ${[client.firstName, client.lastName].filter(Boolean).join(' ')}`}
+                aria-label={`Delete ${[client.firstName, client.lastName].filter(Boolean).join(' ')}`}
                 onClick={() => { setNotice(''); setDeleting(client) }}>
                 <FiTrash2 size={20} aria-hidden="true" />
               </button>
@@ -170,7 +170,7 @@ function Clients() {
         setClients(previous => previous.filter(item => item._id !== client._id))
         setFavorites(previous => new Set([...previous].filter(id => id !== client._id)))
         setDeleting(null)
-        setNotice('Bénéficiaire supprimé.')
+        setNotice("Beneficiary deleted.")
       }} />}
     </div>
   )

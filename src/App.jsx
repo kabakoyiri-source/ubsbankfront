@@ -33,7 +33,7 @@ function AppRoutes() {
   if (authCheckError) return (
     <div className="app-error" role="alert">
       <p>{authCheckError}</p>
-      <button className="btn btn-primary" onClick={checkAuth}>Réessayer</button>
+      <button className="btn btn-primary" onClick={checkAuth}>Try again</button>
     </div>
   )
   return (

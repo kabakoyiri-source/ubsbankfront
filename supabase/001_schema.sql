@@ -129,11 +129,11 @@ begin
   if exists(select 1 from usb_private.usb_login_attempts where email_hash=email_key and started_at<now()-interval '15 minutes') then
     update usb_private.usb_login_attempts set attempts=0,started_at=now() where email_hash=email_key; failures:=0;
   end if;
-  if failures>=10 then return jsonb_build_object('success',false,'status',429,'message','Trop de tentatives. Réessayez dans 15 minutes.'); end if;
+  if failures>=10 then return jsonb_build_object('success',false,'status',429,'message','Too many attempts. Try again in 15 minutes.'); end if;
   select * into u from public.usb_users where lower(email)=lower(trim(p_email));
   if u.id is null or not usb_private.usb_password_matches(p_password,u.password_hash) then
     update usb_private.usb_login_attempts set attempts=attempts+1 where email_hash=email_key;
-    return jsonb_build_object('success',false,'status',401,'message','Identifiants incorrects');
+    return jsonb_build_object('success',false,'status',401,'message','Incorrect credentials');
   end if;
   delete from usb_private.usb_login_attempts where email_hash=email_key;
   delete from usb_private.usb_sessions where expires_at<=now();
@@ -149,14 +149,14 @@ begin
   if coalesce(normalized_email,'') !~ '^[^\s@]+@[^\s@]+\.[^\s@]+$' or length(normalized_email)>254
     or coalesce(length(p_payload->>'password'),0)<6 or octet_length(p_payload->>'password')>72
     or coalesce(trim(p_payload->>'firstName'),'')='' or coalesce(trim(p_payload->>'lastName'),'')='' then
-    raise exception using errcode='PT400',message='Renseignez un email valide, votre nom et un mot de passe de 6 caractères minimum (72 octets maximum).';
+    raise exception using errcode='PT400',message='Enter a valid email, your name and a password of at least 6 characters (72 bytes maximum).';
   end if;
   insert into public.usb_users(email,password_hash,first_name,last_name)
     values(normalized_email,extensions.crypt(p_payload->>'password',extensions.gen_salt('bf',10)),trim(p_payload->>'firstName'),trim(p_payload->>'lastName')) returning * into u;
   token := encode(extensions.gen_random_bytes(32),'hex');
   insert into usb_private.usb_sessions(token_hash,user_id) values(encode(extensions.digest(token,'sha256'),'hex'),u.id);
   return jsonb_build_object('success',true,'token',token,'user',usb_private.usb_user_json(u));
-exception when unique_violation then raise exception using errcode='PT409',message='Cet email est déjà enregistré.';
+exception when unique_violation then raise exception using errcode='PT409',message='This email is already registered.';
 end;
 $$;
 create or replace function public.usb_logout(p_session_token text) returns jsonb
@@ -179,8 +179,8 @@ declare
 begin
   select user_id into uid from usb_private.usb_sessions
     where token_hash=encode(extensions.digest(p_session_token,'sha256'),'hex') and expires_at>now();
-  if uid is null then raise exception using errcode='PT401', message='Veuillez vous connecter.'; end if;
-  if not exists(select 1 from public.usb_users where id=uid) then raise exception using errcode='PT401', message='Compte introuvable.'; end if;
+  if uid is null then raise exception using errcode='PT401', message='Please log in.'; end if;
+  if not exists(select 1 from public.usb_users where id=uid) then raise exception using errcode='PT401', message='Account not found.'; end if;
   mutating := p_action in ('profile.update','clients.create','clients.update','clients.delete','operations.create','operations.transfer','operations.status','operations.delete');
   if mutating then
     perform 1 from public.usb_users where id=uid for update;
@@ -192,9 +192,9 @@ begin
     return jsonb_build_object('success',true,'user',usb_private.usb_user_json(u));
   elsif p_action='profile.update' then
     select * into u from public.usb_users where id=uid;
-    if not usb_private.usb_password_matches(p_payload->>'password',u.password_hash) then raise exception using errcode='PT400',message='Mot de passe incorrect'; end if;
+    if not usb_private.usb_password_matches(p_payload->>'password',u.password_hash) then raise exception using errcode='PT400',message='Incorrect password'; end if;
     if coalesce(trim(p_payload->>'firstName'),'')='' or coalesce(trim(p_payload->>'lastName'),'')='' then
-      raise exception using errcode='PT400', message='Renseignez votre prénom et votre nom.';
+      raise exception using errcode='PT400', message='Enter your first and last name.';
     end if;
     update public.usb_users set first_name=trim(p_payload->>'firstName'),last_name=trim(p_payload->>'lastName'),updated_at=now() where id=uid returning * into u;
     return jsonb_build_object('success',true,'user',usb_private.usb_user_json(u));
@@ -205,7 +205,7 @@ begin
   elsif p_action in ('clients.get','clients.update','clients.delete') then
     select * into b from public.usb_beneficiaries where id=p_payload->>'id' and user_id=uid
       and (deleted_at is null or p_action='clients.delete');
-    if not found then raise exception using errcode='PT404',message='Bénéficiaire introuvable.'; end if;
+    if not found then raise exception using errcode='PT404',message='Beneficiary not found.'; end if;
     if p_action='clients.delete' then
       update public.usb_beneficiaries set deleted_at=coalesce(deleted_at,now()),updated_at=now() where id=b.id;
       result := 'null';
@@ -222,10 +222,10 @@ begin
     account := upper(regexp_replace(coalesce(p_payload->>'accountNumber',''),'\s+','','g'));
     swift := upper(regexp_replace(coalesce(p_payload->>'swiftCode',''),'\s+','','g'));
     if account='' or swift='' or coalesce(trim(p_payload->>'lastName'),'')='' or coalesce(trim(p_payload->>'bankName'),'')='' or coalesce(trim(p_payload->>'bankAddress'),'')='' then
-      raise exception using errcode='PT400',message='Complétez le nom et les coordonnées bancaires du bénéficiaire.';
+      raise exception using errcode='PT400',message='Enter the beneficiary’s name and bank details.';
     end if;
     select * into b from public.usb_beneficiaries where user_id=uid and account_number=account;
-    if found and b.deleted_at is null then raise exception using errcode='PT409',message='Ce numéro de compte est déjà enregistré. Vérifiez l’IBAN ou sélectionnez le bénéficiaire existant.'; end if;
+    if found and b.deleted_at is null then raise exception using errcode='PT409',message='This account number is already registered. Check the IBAN or select the existing beneficiary.'; end if;
     if b.id is not null then
       update public.usb_beneficiaries set first_name=coalesce(trim(p_payload->>'firstName'),''),last_name=trim(p_payload->>'lastName'),
         bank_name=trim(p_payload->>'bankName'),swift_code=swift,bank_address=trim(p_payload->>'bankAddress'),status='active',deleted_at=null,updated_at=now()
@@ -238,7 +238,7 @@ begin
   elsif p_action in ('operations.list','operations.get','operations.history') then
     if p_action='operations.get' then
       select * into o from public.usb_operations where id=p_payload->>'id' and user_id=uid;
-      if not found then raise exception using errcode='PT404',message='Opération introuvable.'; end if;
+      if not found then raise exception using errcode='PT404',message='Transaction not found.'; end if;
       return jsonb_build_object('success',true,'data',usb_private.usb_operation_json(o));
     end if;
     select coalesce(jsonb_agg(usb_private.usb_operation_json(x) order by x.created_at desc),'[]') into result
@@ -250,75 +250,75 @@ begin
       and (coalesce(p_payload->>'endDate','')='' or x.created_at <= (p_payload->>'endDate')::timestamptz);
     return jsonb_build_object('success',true,'data',result,'count',jsonb_array_length(result));
   elsif p_action in ('operations.create','operations.transfer') then
-    if coalesce(p_payload->>'amount','') !~ '^\d+(?:[.,]\d{1,2})?$' then raise exception using errcode='PT400',message='Saisissez un montant positif avec deux décimales au maximum.'; end if;
+    if coalesce(p_payload->>'amount','') !~ '^\d+(?:[.,]\d{1,2})?$' then raise exception using errcode='PT400',message='Enter a positive amount with no more than two decimal places.'; end if;
     quantity := replace(p_payload->>'amount',',','.')::numeric;
-    if quantity<=0 or quantity>90071992547409.91 then raise exception using errcode='PT400',message='Montant invalide.'; end if;
+    if quantity<=0 or quantity>90071992547409.91 then raise exception using errcode='PT400',message='Invalid amount.'; end if;
     currency_code := upper(coalesce(p_payload->>'currency',p_payload->>'adminAccountType','CHF'));
-    if currency_code not in ('CHF','EUR','USD') then raise exception using errcode='PT400',message='Devise invalide. Choisissez CHF, EUR ou USD.'; end if;
+    if currency_code not in ('CHF','EUR','USD') then raise exception using errcode='PT400',message='Invalid currency. Choose CHF, EUR or USD.'; end if;
     operation_type := case when p_action='operations.transfer' then 'transfer' else p_payload->>'type' end;
-    if operation_type is null or operation_type not in ('deposit','withdrawal','transfer','payment') then raise exception using errcode='PT400',message='Type d’opération invalide.'; end if;
+    if operation_type is null or operation_type not in ('deposit','withdrawal','transfer','payment') then raise exception using errcode='PT400',message='Invalid transaction type.'; end if;
     beneficiary_key := nullif(p_payload->>'clientId','');
-    if beneficiary_key is null and operation_type<>'deposit' then raise exception using errcode='PT400',message='Veuillez sélectionner un bénéficiaire.'; end if;
+    if beneficiary_key is null and operation_type<>'deposit' then raise exception using errcode='PT400',message='Select a beneficiary.'; end if;
     if p_action='operations.transfer' then
-      if upper(coalesce(p_payload->>'adminAccountType',''))<>currency_code then raise exception using errcode='PT400',message='Le compte source doit correspondre à la devise du virement.'; end if;
+      if upper(coalesce(p_payload->>'adminAccountType',''))<>currency_code then raise exception using errcode='PT400',message='The source account must match the transfer currency.'; end if;
       transfer_kind := coalesce(p_payload->>'transferType',case when p_payload->>'isScheduled'='true' then 'delayed' else 'instant' end);
-      if transfer_kind not in ('instant','delayed') then raise exception using errcode='PT400',message='Type de virement invalide.'; end if;
+      if transfer_kind not in ('instant','delayed') then raise exception using errcode='PT400',message='Invalid transfer type.'; end if;
       scheduled := transfer_kind='delayed';
-      if p_payload ? 'isScheduled' and (p_payload->>'isScheduled')::boolean<>scheduled then raise exception using errcode='PT400',message='Planification incohérente.'; end if;
-      if not scheduled and quantity>20000 then raise exception using errcode='PT400',message='Le montant maximum pour un virement instantané est de 20 000 '||currency_code||'.'; end if;
+      if p_payload ? 'isScheduled' and (p_payload->>'isScheduled')::boolean<>scheduled then raise exception using errcode='PT400',message='Inconsistent transfer schedule.'; end if;
+      if not scheduled and quantity>20000 then raise exception using errcode='PT400',message='The maximum amount for an instant transfer is 20 000 '||currency_code||'.'; end if;
     else transfer_kind:='instant'; scheduled:=false; end if;
     available := (funds->>currency_code)::numeric;
     signed_amount := quantity;
     if beneficiary_key is not null then
       select * into b from public.usb_beneficiaries where id=beneficiary_key and user_id=uid and deleted_at is null;
-      if not found then raise exception using errcode='PT404',message='Bénéficiaire introuvable.'; end if;
-      if b.status<>'active' then raise exception using errcode='PT400',message='Ce bénéficiaire est indisponible.'; end if;
+      if not found then raise exception using errcode='PT404',message='Beneficiary not found.'; end if;
+      if b.status<>'active' then raise exception using errcode='PT400',message='This beneficiary is unavailable.'; end if;
       outgoing := operation_type in ('deposit','transfer');
-      if outgoing and available<quantity then raise exception using errcode='PT400',message='Solde insuffisant sur le compte '||currency_code||'. Ajoutez des fonds dans les paramètres.'; end if;
+      if outgoing and available<quantity then raise exception using errcode='PT400',message='Insufficient funds in the '||currency_code||' account. Add funds in Settings.'; end if;
       signed_amount := case when outgoing then -quantity else quantity end;
       if not scheduled then
-        if b.balance-signed_amount<0 then raise exception using errcode='PT400',message='Solde du bénéficiaire insuffisant.'; end if;
+        if b.balance-signed_amount<0 then raise exception using errcode='PT400',message='Insufficient beneficiary balance.'; end if;
         update public.usb_beneficiaries set balance=balance-signed_amount,updated_at=now() where id=b.id;
       end if;
     end if;
     insert into public.usb_operations(user_id,beneficiary_id,type,amount,currency,description,reason,recipient_account_number,
       admin_account_type,admin_account_name,admin_account_iban,transfer_type,transfer_speed,is_scheduled,status,balance_after)
-      values(uid,beneficiary_key,operation_type,signed_amount,currency_code,coalesce(p_payload->>'description',case when beneficiary_key is null then 'Ajout de fonds' else '' end),
+      values(uid,beneficiary_key,operation_type,signed_amount,currency_code,coalesce(p_payload->>'description',case when beneficiary_key is null then 'Funds added' else '' end),
         p_payload->>'reason',p_payload->>'recipientAccountNumber',lower(currency_code),p_payload->>'adminAccountName',p_payload->>'adminAccountIban',transfer_kind,
         case when scheduled then '2-3 days' else 'instant' end,scheduled,case when scheduled then 'pending' else 'completed' end,available+signed_amount)
       returning * into o;
     result := usb_private.usb_operation_json(o);
   elsif p_action in ('operations.status','operations.delete') then
     select * into o from public.usb_operations where id=p_payload->>'id' and user_id=uid;
-    if not found then raise exception using errcode='PT404',message='Opération introuvable.'; end if;
+    if not found then raise exception using errcode='PT404',message='Transaction not found.'; end if;
     if p_action='operations.status' then
       next_status := p_payload->>'status';
-      if next_status is null or next_status not in ('completed','failed','cancelled') then raise exception using errcode='PT400',message='Statut invalide.'; end if;
+      if next_status is null or next_status not in ('completed','failed','cancelled') then raise exception using errcode='PT400',message='Invalid status.'; end if;
       if o.status<>next_status then
-        if o.status<>'pending' or o.type<>'transfer' then raise exception using errcode='PT400',message='Seul un virement en attente peut changer de statut.'; end if;
+        if o.status<>'pending' or o.type<>'transfer' then raise exception using errcode='PT400',message='Only a pending transfer can change status.'; end if;
         if next_status='completed' then
           update public.usb_beneficiaries set balance=balance+abs(o.amount),updated_at=now() where id=o.beneficiary_id and user_id=uid;
-          if not found then raise exception using errcode='PT404',message='Bénéficiaire introuvable.'; end if;
+          if not found then raise exception using errcode='PT404',message='Beneficiary not found.'; end if;
         end if;
         update public.usb_operations set status=next_status,is_scheduled=case when next_status='completed' then false else is_scheduled end,updated_at=now() where id=o.id returning * into o;
       end if;
       result := usb_private.usb_operation_json(o);
     else
       if o.status='completed' then
-        if o.amount>0 and (funds->>o.currency)::numeric<o.amount then raise exception using errcode='PT409',message='Ces fonds ont déjà été utilisés et ne peuvent pas être supprimés.'; end if;
+        if o.amount>0 and (funds->>o.currency)::numeric<o.amount then raise exception using errcode='PT409',message='These funds have already been used and cannot be removed.'; end if;
         if o.beneficiary_id is not null then
           select * into b from public.usb_beneficiaries where id=o.beneficiary_id and user_id=uid;
-          if not found then raise exception using errcode='PT404',message='Bénéficiaire introuvable.'; end if;
-          if b.balance+o.amount<0 then raise exception using errcode='PT400',message='Solde du bénéficiaire insuffisant.'; end if;
+          if not found then raise exception using errcode='PT404',message='Beneficiary not found.'; end if;
+          if b.balance+o.amount<0 then raise exception using errcode='PT400',message='Insufficient beneficiary balance.'; end if;
           update public.usb_beneficiaries set balance=balance+o.amount,updated_at=now() where id=b.id;
         end if;
       end if;
       delete from public.usb_operations where id=o.id;
       result := 'null';
     end if;
-  else raise exception using errcode='PT404',message='Action introuvable.'; end if;
+  else raise exception using errcode='PT404',message='Action not found.'; end if;
   funds := usb_private.usb_balances(uid);
-  if exists(select 1 from jsonb_each_text(funds) f where abs(f.value::numeric)>90071992547409.91) then raise exception using errcode='PT400',message='Le montant dépasse la limite du compte.'; end if;
+  if exists(select 1 from jsonb_each_text(funds) f where abs(f.value::numeric)>90071992547409.91) then raise exception using errcode='PT400',message='The amount exceeds the account limit.'; end if;
   update public.usb_users set balances=funds,ledger_revision=ledger_revision+1,updated_at=now() where id=uid;
   return jsonb_build_object('success',true,'data',result,'balances',funds);
 end;

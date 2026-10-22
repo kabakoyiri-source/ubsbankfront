@@ -22,7 +22,7 @@ const BankCard = () => {
     setCardData(mockCardData);
   }, [user]);
 
-  if (!cardData) return <div className="loading">Chargement...</div>;
+  if (!cardData) return <div className="loading">Loading...</div>;
 
   return (
     <div className="card-container">
@@ -76,7 +76,7 @@ const BankCard = () => {
             </div>
           </div>
           <div className="card-info-text">
-            Pour toute question, contactez votre banque
+            For any questions, contact your bank
           </div>
         </div>
       </div>
@@ -86,7 +86,7 @@ const BankCard = () => {
         className="flip-button"
         onClick={() => setIsFlipped(!isFlipped)}
       >
-        {isFlipped ? 'Voir le recto' : 'Voir le verso'}
+        {isFlipped ? "Show front" : "Show back"}
       </button>
     </div>
   );
@@ -102,17 +102,17 @@ function Cards() {
           <button 
             onClick={() => window.history.back()} 
             className="back-button"
-            aria-label="Retour"
+            aria-label="Back"
           >
             <FiArrowLeft size={20} />
           </button>
-          <h1>Mes Cartes</h1>
+          <h1>My cards</h1>
         </div>
       </div>
 
       <div className="cards-content">
         <div className="cards-section">
-          <h2>Mes Cartes Bancaires</h2>
+          <h2>My payment cards</h2>
           <div className="cards-grid">
             <BankCard />
           </div>
@@ -120,34 +120,34 @@ function Cards() {
 
         {showAddCard && (
           <div className="add-card-section">
-            <h2>Ajouter une nouvelle carte</h2>
+            <h2>Add a new card</h2>
             <div className="add-card-form">
               <div className="form-group">
-                <label>Type de carte</label>
+                <label>Card type</label>
                 <select>
                   <option value="visa">Visa</option>
                   <option value="mastercard">Mastercard</option>
                 </select>
               </div>
               <div className="form-group">
-                <label>Nom du titulaire</label>
+                <label>Cardholder name</label>
                 <input type="text" placeholder="JEAN DUPONT" />
               </div>
               <div className="form-group">
-                <label>Numéro de carte</label>
+                <label>Card number</label>
                 <input type="text" placeholder="1234 5678 9012 3456" maxLength="19" />
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Date d'expiration</label>
-                  <input type="text" placeholder="MM/AA" maxLength="5" />
+                  <label>Expiry date</label>
+                  <input type="text" placeholder="MM/YY" maxLength="5" />
                 </div>
                 <div className="form-group">
                   <label>CVV</label>
                   <input type="text" placeholder="123" maxLength="3" />
                 </div>
               </div>
-              <button className="submit-btn">Ajouter la carte</button>
+              <button className="submit-btn">Add card</button>
             </div>
           </div>
         )}

@@ -14,10 +14,10 @@ const TABS = {
 }
 
 const TAB_LABELS = {
-  [TABS.LAST_30_DAYS]: '30 derniers jours',
-  [TABS.LAST_20]: '20 dernières transactions',
-  [TABS.LAST_6_MONTHS]: '6 derniers mois',
-  [TABS.AVENIR]: 'À venir'
+  [TABS.LAST_30_DAYS]: "Last 30 days",
+  [TABS.LAST_20]: "Last 20 transactions",
+  [TABS.LAST_6_MONTHS]: "Last 6 months",
+  [TABS.AVENIR]: "Upcoming"
 }
 
 const History = () => {
@@ -44,7 +44,7 @@ const History = () => {
         setOperations(operationsData)
       }
     } catch {
-      setError('Impossible de charger l’historique. Vérifiez votre connexion puis réessayez.')
+      setError("Unable to load history. Check your connection and try again.")
     } finally {
       setLoading(false)
     }
@@ -117,8 +117,8 @@ const History = () => {
         setSwipedOperationId(null)
       }
     } catch (error) {
-      console.error('Erreur lors de la suppression:', error)
-      setError(error.response?.data?.message || 'Impossible de supprimer cette opération.')
+      console.error("Unable to delete:", error)
+      setError(error.response?.data?.message || "Unable to delete this transaction.")
       setSwipedOperationId(null)
     }
   }
@@ -189,14 +189,14 @@ const History = () => {
 
   return (
     <div className="history-screen">
-      {error && <div className="error-message" role="alert"><span>{error}</span><button className="btn btn-primary" onClick={fetchOperations}>Réessayer</button></div>}
+      {error && <div className="error-message" role="alert"><span>{error}</span><button className="btn btn-primary" onClick={fetchOperations}>Try again</button></div>}
       <header className="history-top">
         <button className="bac" onClick={() => navigate(-1)}>←</button>
         <h1>Transactions</h1>
       </header>
 
       <div className="filter-bar">
-        <div className="filter-label">Filtrer les transactions ▾</div>
+        <div className="filter-label">Filter transactions ▾</div>
         <div className="filter-tabs">
           <button className={`tab ${activeTab === TABS.LAST_30_DAYS ? 'active' : ''}`} onClick={() => setActiveTab(TABS.LAST_30_DAYS)}>{TAB_LABELS[TABS.LAST_30_DAYS]}</button>
           <button className={`tab ${activeTab === TABS.LAST_20 ? 'active' : ''}`} onClick={() => setActiveTab(TABS.LAST_20)}>{TAB_LABELS[TABS.LAST_20]}</button>
@@ -204,11 +204,11 @@ const History = () => {
           <button className={`tab ${activeTab === TABS.AVENIR ? 'active' : ''}`} onClick={() => setActiveTab(TABS.AVENIR)}>{TAB_LABELS[TABS.AVENIR]}</button>
         </div>
         {lastDate && (
-          <div className="filter-info">Jusqu'au {formatDate(lastDate)} ({filteredOperations.length} transactions)</div>
+          <div className="filter-info">Until {formatDate(lastDate)} ({filteredOperations.length} transactions)</div>
         )}
       </div>
 
-      {loading && <div className="loading">Chargement…</div>}
+      {loading && <div className="loading">Loading…</div>}
 
       {!loading && Object.entries(groupedByYear)
         .sort((a, b) => b[0] - a[0])
@@ -247,7 +247,7 @@ const History = () => {
                       handleDeleteOperation(op._id)
                     }}
                   >
-                    Supprimer
+                    Delete
                   </button>
                 </div>
               </div>

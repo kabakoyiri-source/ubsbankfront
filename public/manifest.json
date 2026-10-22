@@ -2,14 +2,14 @@
   "id": "/",
   "name": "UBS Banking",
   "short_name": "UBS Banking",
-  "description": "Application de gestion bancaire UBS",
+  "description": "UBS banking management app",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "orientation": "any",
-  "lang": "fr",
+  "lang": "en",
   "icons": [
     {
       "src": "/images/icon-192-v4.png",
@@ -37,4 +37,3 @@
     }
   ]
 }
-

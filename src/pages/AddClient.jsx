@@ -39,7 +39,7 @@ function AddClient() {
     payload.accountNumber = payload.accountNumber.replace(/\s+/g, '').toUpperCase()
     payload.swiftCode = payload.swiftCode.replace(/\s+/g, '').toUpperCase()
     if (['lastName', 'bankName', 'accountNumber', 'swiftCode', 'bankAddress'].some(key => !payload[key])) {
-      setError('Complétez le nom et les coordonnées bancaires du bénéficiaire.')
+      setError("Enter the beneficiary’s name and bank details.")
       return
     }
     submitting.current = true
@@ -47,13 +47,13 @@ function AddClient() {
 
     try {
       const response = await api.post('/clients', payload)
-      if (!response.data.success || !response.data.data?._id) throw new Error(response.data.message || 'La création du bénéficiaire a échoué.')
+      if (!response.data.success || !response.data.data?._id) throw new Error(response.data.message || "Unable to create the beneficiary.")
       if (returnToTransfer) {
         const clientId = response.data.data._id
         navigate(`${returnTo}?clientId=${encodeURIComponent(clientId)}`, { replace: true, state: { transferDraft: { ...location.state?.transferDraft, clientId }, beneficiaryCreated: true } })
       } else navigate('/clients', { replace: true })
     } catch (error) {
-      setError(error.response?.data?.message || error.message || 'Erreur lors de la création du bénéficiaire')
+      setError(error.response?.data?.message || error.message || "Unable to create the beneficiary")
     } finally {
       submitting.current = false
       setLoading(false)
@@ -67,13 +67,13 @@ function AddClient() {
           onClick={handleCancel}
           disabled={loading}
           className="back-button"
-          aria-label="Retour"
+          aria-label="Back"
         >
           <FiArrowLeft size={20} />
         </button>
         <div className="header-content">
-          <h1>Ajouter un bénéficiaire</h1>
-          {returnToTransfer && <p>Après l’ajout, vous retrouverez votre virement en cours.</p>}
+          <h1>Add a beneficiary</h1>
+          {returnToTransfer && <p>Your transfer details will be restored after adding the beneficiary.</p>}
         </div>
       </div>
 
@@ -87,12 +87,12 @@ function AddClient() {
         {/* Informations */}
         <div className="form-section">
           <div className="form-group">
-            <label htmlFor="firstName">Prénom (facultatif)</label>
-            <input id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} autoComplete="off" placeholder="Entrez le prénom" />
+            <label htmlFor="firstName">First name (optional)</label>
+            <input id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} autoComplete="off" placeholder="Enter the first name" />
           </div>
           <div className="form-group">
             <label htmlFor="lastName">
-              Nom <span className="required">*</span>
+              Last name <span className="required">*</span>
             </label>
             <input
               type="text"
@@ -100,14 +100,14 @@ function AddClient() {
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
-              placeholder="Entrez le nom"
+              placeholder="Enter the last name"
               required
             />
           </div>
 
           <div className="form-group">
             <label htmlFor="bankName">
-              Nom de la banque <span className="required">*</span>
+              Bank name <span className="required">*</span>
             </label>
             <input
               type="text"
@@ -115,7 +115,7 @@ function AddClient() {
               name="bankName"
               value={formData.bankName}
               onChange={handleChange}
-              placeholder="Ex: UBS, Credit Suisse, etc."
+              placeholder="e.g. UBS, Credit Suisse, etc."
               required
             />
           </div>
@@ -139,7 +139,7 @@ function AddClient() {
 
           <div className="form-group">
             <label htmlFor="swiftCode">
-              Code SWIFT <span className="required">*</span>
+              SWIFT code <span className="required">*</span>
             </label>
             <input
               type="text"
@@ -147,7 +147,7 @@ function AddClient() {
               name="swiftCode"
               value={formData.swiftCode}
               onChange={handleChange}
-              placeholder="Ex: UBSWCHZH80A"
+              placeholder="e.g. UBSWCHZH80A"
               autoCapitalize="characters"
               spellCheck={false}
               required
@@ -157,7 +157,7 @@ function AddClient() {
 
           <div className="form-group">
             <label htmlFor="bankAddress">
-              Adresse de la banque <span className="required">*</span>
+              Bank address <span className="required">*</span>
             </label>
             <textarea
               id="bankAddress"
@@ -165,7 +165,7 @@ function AddClient() {
               value={formData.bankAddress}
               onChange={handleChange}
               rows="3"
-              placeholder="Adresse complète de la banque"
+              placeholder="Full bank address"
               required
             />
           </div>
@@ -180,7 +180,7 @@ function AddClient() {
             className="btn btn-primary"
           >
             <FiX size={18} />
-            <span>Annuler</span>
+            <span>Cancel</span>
           </button>
           <button 
             type="submit" 
@@ -188,7 +188,7 @@ function AddClient() {
             disabled={loading}
           >
             <FiSave size={18} />
-            <span>{loading ? 'Création en cours...' : 'Créer le bénéficiaire'}</span>
+            <span>{loading ? "Creating..." : "Create beneficiary"}</span>
           </button>
         </div>
       </form>

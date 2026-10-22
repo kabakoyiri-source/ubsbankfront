@@ -35,6 +35,27 @@ async function main() {
     const register = payload => rpc('usb_register',{p_payload:payload});
     const user = await register({email:'sql-user@example.test',password:'test-password',firstName:'SQL',lastName:'User',role:'admin',balances:{CHF:9999}});
     const other = await register({email:'other-user@example.test',password:'test-password',firstName:'Other',lastName:'User'});
+    const currencyUser = await register({email:'currencies-sql@example.test',password:'test-password',firstName:'Currency',lastName:'Test'});
+    const expectedCurrencyBalances = {CHF:0,EUR:0,USD:0};
+    for (const [code,amount] of [['CHF',10.25],['EUR',20.50],['USD',30.75]]) {
+      expectedCurrencyBalances[code]=amount;
+      const response=await rpc('usb_api',{p_action:'operations.create',p_payload:{type:'deposit',amount,currency:code},p_session_token:currencyUser.token});
+      assert.equal(response.data.currency,code);
+      assert.deepEqual(response.balances,expectedCurrencyBalances,'Each deposit must update only its own currency');
+    }
+    const moneySource=fs.readFileSync(path.resolve(__dirname,'../src/services/money.js'),'utf8');
+    const { formatAmount,normalizeAmountInput,formatAmountInput }=await import('data:text/javascript;base64,'+Buffer.from(moneySource).toString('base64'));
+    assert.equal(formatAmount(1234567.89),"1'234'567.89");
+    assert.equal(formatAmountInput('1234.50'),"1'234.50");
+    assert.equal(normalizeAmountInput("1'234,50"),'1234.50');
+    assert.equal(normalizeAmountInput("1'234.50"),'1234.50');
+    const messagesSource=fs.readFileSync(path.resolve(__dirname,'../src/services/messages.js'),'utf8').replace(/^import englishMessages .+$/m,'const englishMessages='+fs.readFileSync(path.resolve(__dirname,'../src/services/englishMessages.json'),'utf8'));
+    const {toEnglishMessage,transactionInEnglish}=await import('data:text/javascript;base64,'+Buffer.from(messagesSource).toString('base64'));
+    assert.equal(toEnglishMessage('Solde insuffisant sur le compte USD. Ajoutez des fonds dans les paramètres.'),'Insufficient funds in the USD account. Add funds in Settings.');
+    assert.equal(toEnglishMessage('Identifiants incorrects'),'Incorrect credentials');
+    assert.equal(toEnglishMessage('constructor'),'constructor');
+    assert.equal(transactionInEnglish({description:'Ajout de fonds'}).description,'Funds added');
+    assert.equal(transactionInEnglish({description:'Note personnelle du client'}).description,'Note personnelle du client','Do not rewrite user-authored descriptions');
     assert(user.success && /^[a-f0-9]{64}$/.test(user.token));
     assert.equal(user.user.role,'user'); assert.deepEqual(user.user.balances,{CHF:0,EUR:0,USD:0});
     assert(!('password_hash' in user.user));

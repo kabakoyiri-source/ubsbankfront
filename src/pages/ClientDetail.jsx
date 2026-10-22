@@ -39,7 +39,7 @@ function ClientDetail() {
         setClient(response.data.data)
       }
     } catch (error) {
-      setError('Erreur lors du chargement du client')
+      setError("Unable to load the beneficiary")
     } finally {
       setLoading(false)
     }
@@ -52,7 +52,7 @@ function ClientDetail() {
         setOperations(response.data.data || [])
       }
     } catch (error) {
-      console.error('Erreur lors du chargement des opérations:', error)
+      console.error("Unable to load transactions:", error)
     }
   }
 
@@ -61,7 +61,7 @@ function ClientDetail() {
       <div className="client-detail-container">
         <div className="loading-container">
           <FiLoader className="spinner-icon" size={48} />
-          <p>Chargement...</p>
+          <p>Loading...</p>
         </div>
       </div>
     )
@@ -71,11 +71,11 @@ function ClientDetail() {
     return (
       <div className="client-detail-container">
         <div className="error-message">
-          <span>{error || 'Bénéficiaire non trouvé'}</span>
+          <span>{error || "Beneficiary not found"}</span>
         </div>
         <Link to="/clients" className="btn btn-primary">
           <FiArrowLeft size={18} />
-          <span>Retour à la liste</span>
+          <span>Back to list</span>
         </Link>
       </div>
     )
@@ -87,7 +87,7 @@ function ClientDetail() {
         <button 
           onClick={() => navigate('/clients')} 
           className="back-button"
-          aria-label="Retour"
+          aria-label="Back"
         >
           <FiArrowLeft size={20} />
         </button>
@@ -97,11 +97,11 @@ function ClientDetail() {
         <div className="header-actions">
           <Link to={`/operations/new?clientId=${id}`} className="btn btn-primary">
             <FiArrowRight size={18} />
-            <span>Nouvelle opération</span>
+            <span>New transaction</span>
           </Link>
           <button type="button" className="btn beneficiary-delete-btn" onClick={() => setDeleting(true)}>
             <FiTrash2 size={18} aria-hidden="true" />
-            <span>Supprimer le bénéficiaire</span>
+            <span>Delete beneficiary</span>
           </button>
         </div>
       </div>
@@ -118,21 +118,21 @@ function ClientDetail() {
           <div className="section-icon">
             <FiUser size={24} />
           </div>
-          <h2>Informations personnelles</h2>
+          <h2>Personal information</h2>
         </div>
         
         <div className="info-grid">
           <div className="info-item">
             <label>
               <FiUser size={16} />
-              Prénom
+              First name
             </label>
             <span>{client.firstName || '-'}</span>
           </div>
           <div className="info-item">
             <label>
               <FiUser size={16} />
-              Nom
+              Last name
             </label>
             <span>{client.lastName}</span>
           </div>
@@ -147,7 +147,7 @@ function ClientDetail() {
             <div className="info-item">
               <label>
                 <FiPhone size={16} />
-                Téléphone
+                Phone
               </label>
               <span>{client.phone}</span>
             </div>
@@ -162,31 +162,31 @@ function ClientDetail() {
             <div className="section-icon">
               <FiMapPin size={24} />
             </div>
-            <h2>Adresse</h2>
+            <h2>Address</h2>
           </div>
           
           <div className="info-grid">
             {client.address.street && (
               <div className="info-item">
-                <label>Rue</label>
+                <label>Street</label>
                 <span>{client.address.street}</span>
               </div>
             )}
             {client.address.city && (
               <div className="info-item">
-                <label>Ville</label>
+                <label>City</label>
                 <span>{client.address.city}</span>
               </div>
             )}
             {client.address.postalCode && (
               <div className="info-item">
-                <label>Code postal</label>
+                <label>Postcode</label>
                 <span>{client.address.postalCode}</span>
               </div>
             )}
             {client.address.country && (
               <div className="info-item">
-                <label>Pays</label>
+                <label>Country</label>
                 <span>{client.address.country}</span>
               </div>
             )}
@@ -200,28 +200,28 @@ function ClientDetail() {
           <div className="section-icon">
             <FiCreditCard size={24} />
           </div>
-          <h2>Informations bancaires</h2>
+          <h2>Bank details</h2>
         </div>
         
         <div className="info-grid">
           <div className="info-item">
             <label>
               <FiCreditCard size={16} />
-              Numéro de compte
+              Account number
             </label>
             <span className="account-number">{client.accountNumber}</span>
           </div>
           <div className="info-item">
             <label>
               <FiDollarSign size={16} />
-              Solde
+              Balance
             </label>
             <span className="balance-amount">
               {formatAmount(client.balance)} {client.currency || 'CHF'}
             </span>
           </div>
           <div className="info-item">
-            <label>Statut</label>
+            <label>Status</label>
             <span className={`status-badge status-${client.status}`}>
               {client.status}
             </span>
@@ -235,7 +235,7 @@ function ClientDetail() {
           <div className="section-icon">
             <FiRepeat size={24} />
           </div>
-          <h2>Opérations ({operations.length})</h2>
+          <h2>Transactions ({operations.length})</h2>
         </div>
         
         {operations.length === 0 ? (
@@ -243,7 +243,7 @@ function ClientDetail() {
             <div className="empty-icon">
               <FiRepeat size={48} />
             </div>
-            <p>Aucune opération pour ce bénéficiaire</p>
+            <p>No transactions for this beneficiary</p>
           </div>
         ) : (
           <div className="operations-list">
@@ -259,9 +259,9 @@ function ClientDetail() {
                 <div className="operation-content">
                   <div className="operation-header">
                     <span className={`badge badge-${op.type}`}>
-                      {op.type === 'deposit' ? 'Crédit (Dépôt)' : 
-                       op.type === 'withdrawal' ? 'Débit (Retrait)' :
-                       op.type === 'transfer' ? 'Débit (Virement)' : 'Débit (Paiement)'}
+                      {op.type === 'deposit' ? "Credit (deposit)" :
+                       op.type === 'withdrawal' ? "Debit (withdrawal)" :
+                       op.type === 'transfer' ? "Debit (transfer)" : "Debit (payment)"}
                     </span>
                     <span className={`badge badge-${op.status}`}>
                       {op.status}
@@ -272,7 +272,7 @@ function ClientDetail() {
                       {op.amount > 0 ? '+' : ''}{formatAmount(op.amount)} {op.currency || 'CHF'}
                     </span>
                     <span className="operation-date">
-                      {new Date(op.createdAt).toLocaleDateString('fr-FR', {
+                      {new Date(op.createdAt).toLocaleDateString("en-GB", {
                         day: '2-digit',
                         month: 'short',
                         year: 'numeric'

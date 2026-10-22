@@ -3,7 +3,7 @@ import { PostgrestClient } from '@supabase/postgrest-js'
 const url = import.meta.env.VITE_SUPABASE_URL?.replace(/\/+$/, '')
 const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
 export const supabaseConfigurationError = !url || !key
-  ? 'Supabase n’est pas configuré. Renseignez VITE_SUPABASE_URL et VITE_SUPABASE_PUBLISHABLE_KEY, puis relancez la compilation.'
+  ? "Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY, then rebuild the app."
   : null
 // Auth is implemented by usb_users + SQL RPCs. Supabase Auth is not used.
 export const supabase = supabaseConfigurationError ? null : new PostgrestClient(`${url}/rest/v1`, {

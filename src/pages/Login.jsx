@@ -32,7 +32,7 @@ function Login() {
       if (!active) return
       setRemember(false)
       setMemoryAvailable(false)
-      setMemoryMessage('La mémorisation est indisponible dans ce navigateur. Vous pouvez vous connecter normalement.')
+      setMemoryMessage("Saving credentials is unavailable in this browser. You can still log in normally.")
     }).finally(() => { if (active) setReadingSavedLogin(false) })
     return () => { active = false }
   }, [])
@@ -46,7 +46,7 @@ function Login() {
       setSavedLogin(false)
       if (clearFields) { setEmail(''); setPassword('') }
     } catch {
-      setMemoryMessage('Impossible d’effacer les identifiants mémorisés. Réessayez.')
+      setMemoryMessage("Unable to remove saved credentials. Try again.")
     } finally { setForgetting(false) }
   }
 
@@ -66,7 +66,7 @@ function Login() {
           else await forgetRememberedLogin()
         }
       } catch {
-        loginMemoryError = 'Connexion réussie, mais les identifiants n’ont pas pu être mémorisés sur cet appareil.'
+        loginMemoryError = "You are logged in, but your credentials could not be saved on this device."
       }
       navigate('/', { replace: true, state: loginMemoryError ? { loginMemoryError } : undefined })
     } else {
@@ -82,7 +82,7 @@ function Login() {
           <div className="auth-logo">
             <img src="/images/logo-wordmark.png" alt="UBS Logo" className="logo-icon" />
           </div>
-          <h2>Connexion e-banking</h2>
+          <h2>E-banking login</h2>
         </div>
 
         {(error || supabaseConfigurationError) && (
@@ -109,7 +109,7 @@ function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="Entrez votre email"
+              placeholder="Enter your email"
               className="form-input"
             />
           </div>
@@ -117,7 +117,7 @@ function Login() {
           <div className="form-group">
             <label htmlFor="login-password">
               <FiLock size={18} />
-              Mot de passe
+              Password
             </label>
             <input
               id="login-password"
@@ -128,7 +128,7 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="Entrez votre mot de passe"
+              placeholder="Enter your password"
               className="form-input"
             />
           </div>
@@ -141,10 +141,10 @@ function Login() {
                   if (event.target.checked) setRemember(true)
                   else forget(false)
                 }} />
-              <span>Mémoriser mes identifiants sur cet appareil</span>
+              <span>Remember my credentials on this device</span>
             </label>
-            <p className="remember-login-help">À utiliser sur votre appareil personnel. Les champs seront préremplis à votre prochaine connexion.</p>
-            {savedLogin && <button type="button" className="forget-login" disabled={loading || forgetting} onClick={() => forget()}>Oublier mes identifiants</button>}
+            <p className="remember-login-help">Use this on your personal device. Your credentials will be filled in the next time you log in.</p>
+            {savedLogin && <button type="button" className="forget-login" disabled={loading || forgetting} onClick={() => forget()}>Forget my credentials</button>}
             {memoryMessage && <p className="remember-login-message" role="status">{memoryMessage}</p>}
           </div>
 
@@ -153,15 +153,15 @@ function Login() {
             className="btn btn-secondary btn-block btn-auth" 
             disabled={loading || readingSavedLogin || forgetting}
           >
-            {readingSavedLogin ? <span>Chargement…</span> : loading ? (
+            {readingSavedLogin ? <span>Loading…</span> : loading ? (
               <>
                 <span className="spinner"></span>
-                <span>Connexion...</span>
+                <span>Logging in...</span>
               </>
             ) : (
               <>
                 <FiLogIn size={18} />
-                <span>Se connecter</span>
+                <span>Log in</span>
               </>
             )}
           </button>
@@ -169,10 +169,10 @@ function Login() {
 
         <div className="auth-footer">
           <p>
-            Pas encore de compte ?{' '}
+            Don’t have an account?{' '}
             <Link to="/register" className="auth-link">
               <FiUserPlus size={16} />
-              S'inscrire
+              Sign up
             </Link>
           </p>
         </div>

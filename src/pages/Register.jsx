@@ -36,12 +36,12 @@ function Register() {
     setError('')
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Les mots de passe ne correspondent pas')
+      setError("Passwords do not match")
       return
     }
 
     if (formData.password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères')
+      setError("Your password must contain at least 6 characters")
       return
     }
 
@@ -68,8 +68,8 @@ function Register() {
           <div className="auth-logo">
             <img src="/images/logo-wordmark.png" alt="UBS Logo" className="logo-icon" />
           </div>
-          <h1>Créer un compte</h1>
-          <p>Rejoignez-nous dès aujourd'hui</p>
+          <h1>Create an account</h1>
+          <p>Join us today</p>
         </div>
 
         {error && (
@@ -83,7 +83,7 @@ function Register() {
           <div className="form-group">
             <label>
               <FiUser size={18} />
-              Prénom
+              First name
             </label>
             <input
               type="text"
@@ -99,7 +99,7 @@ function Register() {
           <div className="form-group">
             <label>
               <FiUser size={18} />
-              Nom
+              Last name
             </label>
             <input
               type="text"
@@ -131,7 +131,7 @@ function Register() {
           <div className="form-group">
             <label>
               <FiLock size={18} />
-              Mot de passe
+              Password
             </label>
             <input
               type="password"
@@ -144,14 +144,14 @@ function Register() {
               placeholder="••••••••"
             />
             <small style={{ color: 'var(--text-tertiary)', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
-              Minimum 6 caractères
+              At least 6 characters
             </small>
           </div>
 
           <div className="form-group">
             <label>
               <FiLock size={18} />
-              Confirmer le mot de passe
+              Confirm password
             </label>
             <input
               type="password"
@@ -173,12 +173,12 @@ function Register() {
             {loading ? (
               <>
                 <span className="spinner"></span>
-                <span>Inscription...</span>
+                <span>Creating account...</span>
               </>
             ) : (
               <>
                 <FiUserPlus size={18} />
-                <span>S'inscrire</span>
+                <span>Sign up</span>
               </>
             )}
           </button>
@@ -186,10 +186,10 @@ function Register() {
 
         <div className="auth-footer">
           <p>
-            Déjà un compte ?{' '}
+            Already have an account?{' '}
             <Link to="/login" className="auth-link">
               <FiLogIn size={16} />
-              Se connecter
+              Log in
             </Link>
           </p>
         </div>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-v4.png" />
@@ -9,7 +9,7 @@
     />
     <meta name="theme-color" content="#ffffff" />
     <meta name="color-scheme" content="light" />
-    <meta name="description" content="Application de gestion bancaire UBS" />
+    <meta name="description" content="UBS banking management app" />
 
     <!-- iOS PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -74,13 +74,13 @@
     </style>
   </head>
   <body>
-    <div id="root"><div class="startup-screen" role="status" aria-label="Chargement de l’application"><img src="/images/logo-wordmark.png" width="240" height="86" alt="UBS" /></div></div>
-    <noscript>Activez JavaScript pour utiliser l’application.</noscript>
+    <div id="root"><div class="startup-screen" role="status" aria-label="Loading the app"><img src="/images/logo-wordmark.png" width="240" height="86" alt="UBS" /></div></div>
+    <noscript>Enable JavaScript to use the app.</noscript>
     <div id="startup-recovery" hidden role="alert">
-      <h1>Le chargement a été interrompu</h1>
-      <p>Une ancienne version peut être restée en mémoire. Réparez le chargement pour retrouver l’application.</p>
-      <button type="button" id="repair-startup">Réparer et recharger</button>
-      <p id="repair-message">Vos identifiants mémorisés seront conservés.</p>
+      <h1>Loading was interrupted</h1>
+      <p>An older version may still be cached. Repair the app to load the latest version.</p>
+      <button type="button" id="repair-startup">Repair and reload</button>
+      <p id="repair-message">Your saved credentials will be kept.</p>
     </div>
     <script>
       // Independent of the React bundle, so a missing JS/CSS file can be repaired.
@@ -112,7 +112,7 @@
         setTimeout(showRecovery, 15000);
         button.addEventListener('click', async () => {
           button.disabled = true;
-          message.textContent = 'Réparation en cours…';
+          message.textContent = 'Repairing…';
           try {
             // This uncached SPA route checks the network without hitting a cached shell.
             const response = await fetch('/__pwa-repair-check__?v=' + Date.now(), { cache: 'reload' });
@@ -132,7 +132,7 @@
             destination.searchParams.set('pwa-repair', String(Date.now()));
             location.replace(destination.href);
           } catch {
-            message.textContent = 'Impossible de joindre l’application. Vérifiez Internet puis réessayez.';
+            message.textContent = 'Unable to reach the app. Check your connection and try again.';
             button.disabled = false;
           }
         });
