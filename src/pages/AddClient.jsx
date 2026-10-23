@@ -139,7 +139,7 @@ function AddClient() {
 
           <div className="form-group">
             <label htmlFor="swiftCode">
-              SWIFT code <span className="required">*</span>
+              BIC / SWIFT <span className="required">*</span>
             </label>
             <input
               type="text"

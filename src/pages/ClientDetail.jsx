@@ -5,7 +5,8 @@ import {
   FiArrowLeft, 
   FiArrowRight, 
   FiUser, 
-  FiMail, 
+  FiHome,
+  FiHash,
   FiPhone, 
   FiMapPin, 
   FiCreditCard, 
@@ -136,13 +137,6 @@ function ClientDetail() {
             </label>
             <span>{client.lastName}</span>
           </div>
-          <div className="info-item">
-            <label>
-              <FiMail size={16} />
-              Email
-            </label>
-            <span>{client.email}</span>
-          </div>
           {client.phone && (
             <div className="info-item">
               <label>
@@ -206,10 +200,31 @@ function ClientDetail() {
         <div className="info-grid">
           <div className="info-item">
             <label>
-              <FiCreditCard size={16} />
-              Account number
+              <FiHome size={16} />
+              Bank name
             </label>
-            <span className="account-number">{client.accountNumber}</span>
+            <span>{client.bankName || 'Not provided'}</span>
+          </div>
+          <div className="info-item">
+            <label>
+              <FiCreditCard size={16} />
+              IBAN
+            </label>
+            <span className="account-number">{client.accountNumber || 'Not provided'}</span>
+          </div>
+          <div className="info-item">
+            <label>
+              <FiHash size={16} />
+              BIC / SWIFT
+            </label>
+            <span>{client.swiftCode || 'Not provided'}</span>
+          </div>
+          <div className="info-item">
+            <label>
+              <FiMapPin size={16} />
+              Bank address
+            </label>
+            <span className="bank-address">{client.bankAddress || 'Not provided'}</span>
           </div>
           <div className="info-item">
             <label>
